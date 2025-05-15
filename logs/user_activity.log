@@ -1,0 +1,13 @@
+2025-05-15 08:48:08 - User ID: 12345 - Action: login
+2025-05-15 08:48:33 - User ID: 12345 - Action: logout
+2025-05-15 08:48:50 - User ID: 001 - Action: login
+2025-05-15 08:48:59 - User ID: 001 - Action: logout
+2025-05-15 08:49:03 - User ID: 12345 - Action: login
+2025-05-15 08:49:17 - User ID: 12345 - Action: logout
+2025-05-15 08:49:21 - User ID: 001 - Action: login
+2025-05-15 08:49:25 - User ID: 001 - Action: logout
+2025-05-15 08:49:38 - User ID: 003 - Action: login
+2025-05-15 08:54:00 - User ID: 003 - Action: logout
+2025-05-15 08:54:17 - User ID: 001 - Action: login
+2025-05-15 09:51:02 - User ID: 001 - Action: logout
+2025-05-15 09:51:11 - User ID: 12345 - Action: login

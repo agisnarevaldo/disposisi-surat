@@ -1,0 +1,52 @@
+# Protect the application
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirect to HTTPS if available
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Allow direct access to specific directories and files
+    RewriteCond %{REQUEST_URI} !^/assets/
+    RewriteCond %{REQUEST_URI} !^/index\.php
+    RewriteCond %{REQUEST_URI} !^/login\.php
+    RewriteCond %{REQUEST_URI} !^/logout\.php
+    RewriteCond %{REQUEST_URI} !^/beranda\.php
+    
+    # Block access to sensitive directories
+    RewriteRule ^(config|controllers|includes|logs|views)/(.*)$ - [F,L]
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^\.ht|\.env|config\.php|.*\.sql$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Set default character set
+AddDefaultCharset UTF-8
+
+# Enable CORS if needed
+# <IfModule mod_headers.c>
+#     Header set Access-Control-Allow-Origin "*"
+# </IfModule>
+
+# PHP settings
+<IfModule mod_php7.c>
+    # Maximum upload file size
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    
+    # Security settings
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log logs/php_errors.log
+    
+    # Session security
+    php_flag session.cookie_httponly On
+    php_flag session.use_only_cookies On
+    php_flag session.cookie_secure On
+</IfModule>

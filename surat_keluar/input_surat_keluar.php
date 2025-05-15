@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($no_surat) || empty($tanggal_surat) || empty($perihal) || empty($kepada) || empty($status)) {
         $message = "Semua kolom harus diisi!";
     } elseif ($message == '') { // lanjut jika tidak ada error upload
-        // Menyiapkan query SQL untuk menyimpan data surat keluar
+        // Menyiapkan query SQL untuk menyimpan data surat_keluar
         $query = "INSERT INTO tb_surat_keluar (No_Surat, Tanggal_Surat, Perihal, Kepada, Status, File_surat)
                   VALUES ('$no_surat', '$tanggal_surat', '$perihal', '$kepada', '$status', '$file_name')";
 

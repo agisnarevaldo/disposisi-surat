@@ -1,7 +1,7 @@
 <?php
 include "../config/koneksi.php";
 
-// Proses simpan data surat keluar
+// Proses simpan data surat_keluar
 if (isset($_POST['submit'])) {
     $no_surat = $_POST['No_Surat'];
     $tanggal_surat = $_POST['Tgl_Surat'];
