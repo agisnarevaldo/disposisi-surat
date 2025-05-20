@@ -5,6 +5,18 @@ import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { EyeIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -117,13 +129,48 @@ export default function Index() {
                                         </TableCell>
                                         <TableCell>{surat.jenis_surat ?? '-'}</TableCell>
                                         <TableCell>{surat.pembuat?.name ?? '—'}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="flex gap-2">
                                             <Link
                                                 href={`/surat-keluar/${surat.id}`}
-                                                className="text-blue-600 hover:underline px-2 py-1 rounded border border-blue-100 bg-blue-50 text-xs"
+                                                className="text-secondary bg-secondary/10 hover:bg-secondary/20 px-2 py-1 rounded border text-xs"
                                             >
-                                                Detail
+                                                <EyeIcon />
                                             </Link>
+
+                                            <Link
+                                                href={`/surat-keluar/${surat.id}/edit`}
+                                                className="text-accent bg-accent/10 hover:bg-accent/20 px-2 py-1 rounded border border-blue-10 text-xs"
+                                            >
+                                                <PencilIcon />
+                                            </Link>
+
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="destructive"
+                                                        className="px-2 py-1 rounded bordertext-xs cursor-pointer"
+                                                    >
+                                                        <Trash2Icon />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Hapus Surat Keluar?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Apakah Anda yakin ingin menghapus surat keluar ini? Tindakan ini tidak dapat dibatalkan.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel className="cursor-pointer">Batal</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            className="bg-destructive text-neutral-50 hover:bg-destructive/90 cursor-pointer"
+                                                            onClick={() => router.delete(`/surat-keluar/${surat.id}`, { preserveScroll: true })}
+                                                        >
+                                                            Hapus
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </TableCell>
                                     </TableRow>
                                 ))
