@@ -35,6 +35,7 @@ class SuratMasukController extends Controller
             'hal_surat' => 'required|string|max:255',
             'jenis_surat' => 'required|string|max:255',
             'file_surat' => 'required|file|mimes:pdf,doc,docx,odt|max:10240', // max 10MB, adjust as needed
+            'tujuan_surat' => 'required|string|max:255',
         ]);
 
         $filePath = $request->file('file_surat')->store('surat-masuk', 'public');
@@ -77,6 +78,7 @@ class SuratMasukController extends Controller
             'hal_surat' => 'required|string|max:255',
             'jenis_surat' => 'required|string|max:255',
             'file_surat' => 'nullable|file|mimes:pdf,doc,docx,odt|max:10240', // max 10MB, adjust as needed
+            'tujuan_surat' => 'required|string|max:255',
         ]);
 
         $suratMasuk = SuratMasuk::findOrFail($id);
