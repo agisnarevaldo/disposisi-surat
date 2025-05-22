@@ -1,9 +1,10 @@
 import React from "react";
-import { useForm } from "@inertiajs/react";
+import { Link, useForm } from "@inertiajs/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import SuratKeluarLayout from "./Layout";
+import { ArrowLeft } from "lucide-react";
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm<{
@@ -38,8 +39,12 @@ export default function Create() {
     return (
         <SuratKeluarLayout breadcrumbs={breadcrumbs}>
             <div className="w-full lg:max-w-2xl mx-auto p-6 space-y-6">
-                <h1 className="text-2xl font-bold">Tambah Surat Keluar</h1>
-
+                <div className="flex items-center gap-4">
+                    <Link href="/surat-masuk">
+                        <ArrowLeft className="md:inline" />
+                    </Link>
+                    <h1 className="text-2xl font-bold">Tambah Surat Keluar</h1>
+                </div>
                 <form onSubmit={submit} className="space-y-4" encType="multipart/form-data">
                     {[
                         { label: "No Surat", name: "no_surat" },

@@ -39,7 +39,6 @@ export default function Detail() {
             <div className="w-full mx-auto p-6 space-y-6">
                 <div className="flex items-center gap-4">
                     <Link href="/surat-keluar">
-                        {/* <ArrowLeftIcon className="w-8 h-4" /> */}
                         <ArrowLeft className="md:inline" />
                     </Link>
                     <h1 className="text-2xl font-bold">Detail Surat Keluar</h1>

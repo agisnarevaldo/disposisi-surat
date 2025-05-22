@@ -80,7 +80,7 @@ export default function Index() {
                             </SelectContent>
                         </Select>
                         <Link href="/surat-keluar/create">
-                            <Button className="dark:text-white">+ Tambah Surat</Button>
+                            <Button className="dark:text-white cursor-pointer">+ Tambah Surat</Button>
                         </Link>
                     </div>
                 </div>
