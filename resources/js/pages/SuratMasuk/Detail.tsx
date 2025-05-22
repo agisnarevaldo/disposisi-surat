@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Head, Link, usePage, router } from "@inertiajs/react";
-import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
+import { ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import DetailInfoItem from "@/components/detail-info-item";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -43,63 +46,89 @@ export default function Detail() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detail Surat Masuk - ${surat.no_surat}`} />
-            <div className="flex flex-col gap-4 p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <table className="w-full text-sm">
-                            <tbody>
-                                <tr><td className="font-semibold w-40">No Agenda</td><td>{surat.no_agenda}</td></tr>
-                                <tr><td className="font-semibold">No Surat</td><td>{surat.no_surat}</td></tr>
-                                <tr><td className="font-semibold">Tanggal Surat</td><td>{surat.tanggal_surat}</td></tr>
-                                <tr><td className="font-semibold">Tanggal Diterima</td><td>{surat.tanggal_diterima}</td></tr>
-                                <tr><td className="font-semibold">Pengirim</td><td>{surat.pengirim}</td></tr>
-                                <tr><td className="font-semibold">Tujuan Surat</td><td>{surat.tujuan_surat}</td></tr>
-                                <tr><td className="font-semibold">Hal Surat</td><td>{surat.hal_surat}</td></tr>
-                                <tr><td className="font-semibold">Jenis Surat</td><td>{surat.jenis_surat}</td></tr>
-                                <tr><td className="font-semibold">Status Baca</td><td>{marked ? 'dibaca' : surat.status_baca}</td></tr>
-                                <tr><td className="font-semibold">Status Tindak Lanjut</td><td>{surat.status_tindak_lanjut}</td></tr>
-                                {surat.pesan_tambahan && <tr><td className="font-semibold">Pesan Tambahan</td><td>{surat.pesan_tambahan}</td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <div className="mb-2 font-semibold">Preview Surat (PDF):</div>
-                        <div className="border rounded shadow overflow-hidden w-full h-96 bg-gray-50">
-                            <iframe
-                                src={surat.file_surat.startsWith('http') ? surat.file_surat : `/storage/${surat.file_surat}`}
-                                title="Preview Surat"
-                                className="w-full h-full"
-                                frameBorder={0}
-                            />
-                        </div>
-                        <a
-                            href={surat.file_surat.startsWith('http') ? surat.file_surat : `/storage/${surat.file_surat}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 inline-block text-blue-600 hover:underline text-xs"
-                            download
-                        >
-                            Download Surat (PDF)
-                        </a>
-                    </div>
-                </div>
-                <div className="flex gap-2 mt-4">
-                    <Link href={`/surat-masuk/${surat.id}/edit`}>
-                        <Button variant="secondary">Edit</Button>
+            <div className="w-full mx-auto p-6 space-y-6">
+                <div className="flex items-center gap-4">
+                    <Link href="/surat-masuk">
+                        <ArrowLeft className="md:inline" />
                     </Link>
-                    <Button
-                        variant="destructive"
-                        onClick={() => {
-                            if (confirm('Yakin ingin menghapus surat ini?')) {
-                                router.delete(`/surat-masuk/${surat.id}`, {
-                                    onSuccess: () => router.visit('/surat-masuk'),
-                                });
-                            }
-                        }}
-                    >
-                        Hapus
-                    </Button>
+                    <h1 className="text-2xl font-bold">Detail Surat Masuk</h1>
                 </div>
+
+                <Card>
+                    <CardContent className="flex flex-col gap-4 pb-2">
+                        <div className="flex items-center justify-between">
+                            <h2 className="font-semibold">Informasi Surat</h2>
+                            <div className="flex gap-2">
+                                <Link href={`/surat-masuk/${surat.id}/edit`} className="text-blue-500 hover:underline">
+                                    Edit
+                                </Link>
+                                {/* Hapus */}
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <span className="text-red-500 cursor-pointer hover:underline">
+                                            Hapus
+                                        </span>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Hapus Surat Masuk?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Apakah Anda yakin ingin menghapus surat masuk ini? Tindakan ini tidak dapat dibatalkan.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="cursor-pointer">Batal</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                className="bg-destructive text-neutral-50 hover:bg-destructive/90 cursor-pointer"
+                                                onClick={() => router.delete(`/surat-masuk/${surat.id}`, { preserveScroll: true })}
+                                            >
+                                                Hapus
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
+                        <DetailInfoItem label="No Agenda" value={surat.no_agenda} />
+                        <DetailInfoItem label="No Surat" value={surat.no_surat} />
+                        <DetailInfoItem label="Tanggal Surat" value={surat.tanggal_surat} />
+                        <DetailInfoItem label="Tanggal Diterima" value={surat.tanggal_diterima} />
+                        <DetailInfoItem label="Pengirim" value={surat.pengirim} />
+                        <DetailInfoItem label="Tujuan Surat" value={surat.tujuan_surat} />
+                        <DetailInfoItem label="Hal Surat" value={surat.hal_surat} />
+                        <DetailInfoItem label="Jenis Surat" value={surat.jenis_surat} />
+                        <DetailInfoItem label="Status Baca" value={marked ? 'dibaca' : surat.status_baca} />
+                        <DetailInfoItem label="Status Tindak Lanjut" value={surat.status_tindak_lanjut} />
+                        {surat.pesan_tambahan && <DetailInfoItem label="Pesan Tambahan" value={surat.pesan_tambahan} />}
+                    </CardContent>
+                </Card>
+                <div className="mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="font-semibold mb-2">Preview Dokumen</h2>
+                        {/* <Link
+                            href={surat.file_surat.startsWith('http') ? surat.file_surat : `/storage/${surat.file_surat}`}
+                            className="mt-2 inline-block text-blue-600 hover:underline text-xs"
+                        >
+                            <ArrowUpRight className="w-4 h-4 inline" />
+                        </Link> */}
+                    </div>
+                    {surat.file_surat && (
+                        <iframe
+                            src={surat.file_surat.startsWith('http') ? surat.file_surat : `/storage/${surat.file_surat}`}
+                            title="Preview Surat"
+                            className="w-full h-96 border rounded shadow"
+                            frameBorder={0}
+                        />
+                    )}
+                    {!surat.file_surat && (
+                        <div className="text-center text-gray-500">
+                            Belum ada file surat yang diunggah.
+                        </div>
+                    )}
+                </div>
+
             </div>
         </AppLayout>
     );
