@@ -17,7 +17,11 @@ export default function Welcome() {
                     <div className="flex-1 flex flex-col items-center justify-center text-center px-2 md:px-8 md:gap-2">
                         <AppLogoIcon className="w-24 h-24 mb-6 animate-float" />
                         <h1 className="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight text-blue-700 dark:text-blue-300 animate-fade-in-up">Aplikasi Disposisi Surat</h1>
-                        <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 animate-fade-in-up delay-100">BPS (Badan Pusat Statistik)<br />Kabupaten Tasikmalaya</h2>
+                        <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 animate-fade-in-up delay-100">
+                            <span className='font-extrabold'>BADAN PUSAT STATISTIK</span>
+                            <br />
+                            Kabupaten Tasikmalaya
+                        </h2>
                         <nav className="flex gap-2">
                             {auth.user ? (
                                 <Link
