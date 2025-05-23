@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Staff() {
-    const { props } = usePage<{ stats: DashboardStats }>();
+    const { props } = usePage<{ stats: DashboardStats, auth: { user: { name: string } } }>();
     const stats = props.stats ?? {
         totalSuratMasuk: 0,
         dibaca: 0,
@@ -32,11 +32,13 @@ export default function Staff() {
         totalSuratKeluar: 0,
         statusKeluar: {},
     };
+    const userName = props.auth?.user?.name ?? "";
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard Kepala" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <div className="mb-2 text-2xl font-semibold">Selamat datang, {userName}!</div>
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader>
