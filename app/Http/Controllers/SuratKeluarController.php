@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class SuratKeluarController extends Controller
 {
@@ -130,22 +131,36 @@ class SuratKeluarController extends Controller
     // Tampilkan form tindak lanjut surat keluar
     public function tindakLanjut($id)
     {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'kepala') {
+            abort(403, 'Akses hanya untuk kepala.');
+        }
         $suratKeluar = SuratKeluar::findOrFail($id);
         return Inertia::render('SuratKeluar/TindakLanjut', [
             'suratKeluar' => $suratKeluar,
+            'defaultTanggal' => Carbon::now()->toDateString(),
         ]);
     }
 
     // Simpan tindak lanjut surat keluar
     public function simpanTindakLanjut(Request $request, $id)
     {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'kepala') {
+            abort(403, 'Akses hanya untuk kepala.');
+        }
         $validated = $request->validate([
             'keterangan_tindak_lanjut' => 'required|string|max:255',
             'tanggal_tindak_lanjut' => 'required|date',
+            'status' => 'required|in:ditindaklanjuti,selesai',
         ]);
 
         $suratKeluar = SuratKeluar::findOrFail($id);
-        $suratKeluar->update($validated);
+        $suratKeluar->update([
+            'keterangan_tindak_lanjut' => $validated['keterangan_tindak_lanjut'],
+            'tanggal_tindak_lanjut' => $validated['tanggal_tindak_lanjut'],
+            'status' => $validated['status'],
+        ]);
 
         return redirect()->route('surat-keluar.index')->with('success', 'Tindak lanjut surat keluar berhasil disimpan.');
     }
