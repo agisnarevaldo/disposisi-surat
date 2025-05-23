@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Head, Link, usePage, router } from "@inertiajs/react";
+import { Head, Link, usePage, router, useForm } from "@inertiajs/react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
@@ -17,6 +17,18 @@ import {
     AlertDialogCancel,
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { type SharedData } from "@/types";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -31,13 +43,16 @@ type SuratKeluar = {
     status: string;
     jenis_surat?: string;
     pembuat?: { name: string };
+    keterangan_tindak_lanjut?: string;
 };
 
 export default function Index() {
-    const { props } = usePage();
+    const { props } = usePage<SharedData>();
     const suratKeluars: SuratKeluar[] = (props.suratKeluars ?? []) as SuratKeluar[];
     const [status, setStatus] = useState<string>("all");
     const [jenis, setJenis] = useState<string>("all");
+    const [openTindakLanjut, setOpenTindakLanjut] = useState<number | null>(null);
+    const { auth } = usePage<SharedData>().props;
 
     // Ambil semua jenis unik dari data
     const jenisOptions = Array.from(new Set(suratKeluars.map(s => s.jenis_surat).filter((v): v is string => typeof v === "string")));
@@ -109,23 +124,9 @@ export default function Index() {
                                         <TableCell>{surat.tanggal_surat}</TableCell>
                                         <TableCell>{surat.kepada}</TableCell>
                                         <TableCell>
-                                            <Select
-                                                value={surat.status}
-                                                onValueChange={val => {
-                                                    if (val !== surat.status) {
-                                                        router.post(`/surat-keluar/${surat.id}/status`, { status: val }, { preserveScroll: true });
-                                                    }
-                                                }}
-                                            >
-                                                <SelectTrigger className="w-[120px]">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="pending">Pending</SelectItem>
-                                                    <SelectItem value="ditindaklanjuti">Ditindaklanjuti</SelectItem>
-                                                    <SelectItem value="selesai">Selesai</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <span className={`px-2 py-1 rounded text-xs ${surat.status === 'selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                {surat.status}
+                                            </span>
                                         </TableCell>
                                         <TableCell>{surat.jenis_surat ?? '-'}</TableCell>
                                         <TableCell>{surat.pembuat?.name ?? '—'}</TableCell>
@@ -143,6 +144,24 @@ export default function Index() {
                                             >
                                                 <PencilIcon />
                                             </Link>
+
+                                            {/* Tombol Tindak Lanjut hanya untuk kepala */}
+                                            {auth?.user?.role === 'kepala' && (
+                                                <>
+                                                    <Button
+                                                        variant="secondary"
+                                                        className="px-2 py-1 rounded border text-xs cursor-pointer"
+                                                        onClick={() => setOpenTindakLanjut(surat.id)}
+                                                    >
+                                                        Tindak Lanjut
+                                                    </Button>
+                                                    <TindakLanjutDialog
+                                                        surat={surat}
+                                                        open={openTindakLanjut === surat.id}
+                                                        onOpenChange={open => setOpenTindakLanjut(open ? surat.id : null)}
+                                                    />
+                                                </>
+                                            )}
 
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
@@ -171,6 +190,7 @@ export default function Index() {
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>
+
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -180,5 +200,78 @@ export default function Index() {
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+// Komponen dialog tindak lanjut
+function TindakLanjutDialog({ surat, open, onOpenChange }: { surat: SuratKeluar, open: boolean, onOpenChange: (open: boolean) => void }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        keterangan_tindak_lanjut: surat.keterangan_tindak_lanjut || "",
+        tanggal_tindak_lanjut: new Date().toISOString().slice(0, 10),
+        status: surat.status === "selesai" ? "selesai" : "ditindaklanjuti",
+    });
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        post(`/surat-keluar/${surat.id}/tindak-lanjut`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                reset();
+                onOpenChange(false);
+            },
+        });
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Tindak Lanjut Surat Keluar</DialogTitle>
+                    <DialogDescription>Isi keterangan, tanggal, dan status tindak lanjut surat keluar.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
+                    <div>
+                        <Label htmlFor="keterangan_tindak_lanjut">Keterangan</Label>
+                        <Input
+                            id="keterangan_tindak_lanjut"
+                            value={data.keterangan_tindak_lanjut}
+                            onChange={e => setData("keterangan_tindak_lanjut", e.target.value)}
+                            required
+                        />
+                        {errors.keterangan_tindak_lanjut && <div className="text-red-500 text-xs mt-1">{errors.keterangan_tindak_lanjut}</div>}
+                    </div>
+                    <div>
+                        <Label htmlFor="tanggal_tindak_lanjut">Tanggal Tindak Lanjut</Label>
+                        <Input
+                            id="tanggal_tindak_lanjut"
+                            type="date"
+                            value={data.tanggal_tindak_lanjut}
+                            onChange={e => setData("tanggal_tindak_lanjut", e.target.value)}
+                            required
+                        />
+                        {errors.tanggal_tindak_lanjut && <div className="text-red-500 text-xs mt-1">{errors.tanggal_tindak_lanjut}</div>}
+                    </div>
+                    <div>
+                        <Label htmlFor="status">Status</Label>
+                        <select
+                            id="status"
+                            value={data.status}
+                            onChange={e => setData("status", e.target.value)}
+                            className="w-full border rounded px-2 py-1"
+                        >
+                            <option value="ditindaklanjuti">Ditindaklanjuti</option>
+                            <option value="selesai">Selesai</option>
+                        </select>
+                        {errors.status && <div className="text-red-500 text-xs mt-1">{errors.status}</div>}
+                    </div>
+                    <DialogFooter>
+                        <Button type="submit" disabled={processing}>Simpan</Button>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline">Batal</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }
