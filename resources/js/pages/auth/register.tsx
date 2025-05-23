@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type RegisterForm = {
     name: string;
     email: string;
     password: string;
     password_confirmation: string;
+    role: string;
 };
 
 export default function Register() {
@@ -22,6 +24,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        role: 'staff',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -37,7 +40,7 @@ export default function Register() {
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">Nama Lengkap</Label>
                         <Input
                             id="name"
                             type="text"
@@ -54,7 +57,7 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">Alamat Email</Label>
                         <Input
                             id="email"
                             type="email"
@@ -86,7 +89,7 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                        <Label htmlFor="password_confirmation">Konfirmasi password</Label>
                         <Input
                             id="password_confirmation"
                             type="password"
@@ -101,9 +104,28 @@ export default function Register() {
                         <InputError message={errors.password_confirmation} />
                     </div>
 
+                    <div className="grid gap-2">
+                        <Label htmlFor="role">Pilih Jabatan</Label>
+                        <Select
+                            value={data.role}
+                            onValueChange={(value) => setData('role', value)}
+                            defaultValue='staff'
+                            disabled={processing}
+                        >
+                            <SelectTrigger className='w-full'>
+                                <SelectValue placeholder="Pilih Jabatan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="pmo">PMO</SelectItem>
+                                <SelectItem value="kepala">Kepala</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
+                        Buat Akun
                     </Button>
                 </div>
 
