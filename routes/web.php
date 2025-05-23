@@ -3,6 +3,8 @@
 use App\Http\Controllers\SuratKeluarController;
 use App\Http\Controllers\SuratMasukController;
 use App\Http\Controllers\DashboardKepalaController;
+use App\Http\Controllers\DashboardPMOController;
+use App\Http\Controllers\DashboardStaffController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -25,8 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/kepala', [DashboardKepalaController::class, 'index'])->name('dashboard.kepala');
-    Route::get('/dashboard/pmo', fn () => Inertia::render('dashboard/pmo'))->name('dashboard.pmo');
-    Route::get('/dashboard/staff', fn () => Inertia::render('dashboard/staff'))->name('dashboard.staff');
+    Route::get('/dashboard/pmo', [DashboardPMOController::class, 'index'])->name('dashboard.pmo');
+    Route::get('/dashboard/staff', [DashboardStaffController::class, 'index'])->name('dashboard.staff');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -37,6 +39,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/surat-keluar/{id}/edit', [SuratKeluarController::class, 'edit'])->name('surat-keluar.edit');
     Route::put('/surat-keluar/{id}', [SuratKeluarController::class, 'update'])->name('surat-keluar.update');
     Route::delete('/surat-keluar/{id}', [SuratKeluarController::class, 'destroy'])->name('surat-keluar.destroy');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/surat-keluar/{id}/tindak-lanjut', [SuratKeluarController::class, 'tindakLanjut'])->name('surat-keluar.tindak-lanjut');
+    Route::post('/surat-keluar/{id}/tindak-lanjut', [SuratKeluarController::class, 'simpanTindakLanjut'])->name('surat-keluar.simpan-tindak-lanjut');
 });
 
 Route::middleware(['auth'])->group(function () {
