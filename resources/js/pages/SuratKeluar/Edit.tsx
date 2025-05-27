@@ -17,6 +17,7 @@ type SuratKeluar = {
     no_surat: string;
     tanggal_surat: string;
     kepada: string;
+    hal_surat: string;
     status: string;
     jenis_surat?: string;
     file_surat?: string;
@@ -30,6 +31,7 @@ export default function Edit() {
         no_surat: surat.no_surat,
         tanggal_surat: surat.tanggal_surat,
         kepada: surat.kepada,
+        hal_surat: surat.hal_surat,
         status: surat.status,
         jenis_surat: surat.jenis_surat || '',
         file_surat: undefined as File | undefined,
@@ -37,20 +39,20 @@ export default function Edit() {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-                const formData = new FormData();
-                Object.entries(data).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null) {
-                        if (value instanceof File) {
-                            formData.append(key, value);
-                        } else {
-                            formData.append(key, String(value));
-                        }
-                    }
-                });
-                formData.append('_method', 'PUT');
-                router.post(`/surat-keluar/${surat.id}`, formData, {
-                    forceFormData: true,
-                });
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                if (value instanceof File) {
+                    formData.append(key, value);
+                } else {
+                    formData.append(key, String(value));
+                }
+            }
+        });
+        formData.append('_method', 'PUT');
+        router.post(`/surat-keluar/${surat.id}`, formData, {
+            forceFormData: true,
+        });
     }
 
     return (
@@ -65,6 +67,8 @@ export default function Edit() {
                         <Input type="date" value={data.tanggal_surat} onChange={e => setData('tanggal_surat', e.target.value)} />
                         <Label>Kepada</Label>
                         <Input type="text" value={data.kepada} onChange={e => setData('kepada', e.target.value)} />
+                        <Label>Hal Surat</Label>
+                        <Input type="text" value={data.hal_surat} onChange={e => setData('hal_surat', e.target.value)} />
                         <Label>Status</Label>
                         <select value={data.status} onChange={e => setData('status', e.target.value)}>
                             <option value="pending">Pending</option>
