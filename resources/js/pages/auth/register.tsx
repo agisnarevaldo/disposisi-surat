@@ -24,7 +24,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
-        role: 'staff',
+        role: 'pegawai',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -109,16 +109,15 @@ export default function Register() {
                         <Select
                             value={data.role}
                             onValueChange={(value) => setData('role', value)}
-                            defaultValue='staff'
+                            defaultValue='pegawai'
                             disabled={processing}
                         >
                             <SelectTrigger className='w-full'>
                                 <SelectValue placeholder="Pilih Jabatan" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="pegawai">Pegawai</SelectItem>
                                 <SelectItem value="pmo">PMO</SelectItem>
-                                <SelectItem value="kepala">Kepala</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
