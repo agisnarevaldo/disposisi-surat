@@ -21,6 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Register middleware aliases
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'kepala' => \App\Http\Middleware\KepalaMiddleware::class,
+            'pmo' => \App\Http\Middleware\PmoMiddleware::class,
+            'pegawai' => \App\Http\Middleware\PegawaiMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
