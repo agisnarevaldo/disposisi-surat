@@ -21,7 +21,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
+        'jabatan',
+        'nip',
+        'alamat',
+        'no_hp',
+        'can_dispose',
+        'keterangan_privilege',
     ];
 
     /**
@@ -44,6 +50,35 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'can_dispose' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if user can dispose letters
+     */
+    public function canDispose(): bool
+    {
+        // Kepala always can dispose
+        if ($this->role === 'kepala') {
+            return true;
+        }
+        
+        // PMO and pegawai need explicit can_dispose privilege
+        return ($this->role === 'pmo' || $this->role === 'pegawai') && $this->can_dispose;
+    }
+
+    /**
+     * Get users who can dispose letters
+     */
+    public static function whoCanDispose()
+    {
+        return static::where(function ($query) {
+            $query->where('role', 'kepala') // Kepala always can dispose
+                  ->orWhere(function ($q) {
+                      $q->whereIn('role', ['pmo', 'pegawai'])
+                        ->where('can_dispose', true);
+                  });
+        });
     }
 }
