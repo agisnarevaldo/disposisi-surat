@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
     Calendar,
     User,
@@ -15,7 +17,9 @@ import {
     ArrowLeft,
     History,
     Send,
-    Printer
+    Printer,
+    Users,
+    Forward
 } from 'lucide-react';
 
 interface SuratMasuk {
@@ -44,17 +48,30 @@ interface DisposisiLog {
 }
 
 interface TugasShowProps {
-    auth: any;
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            role: string;
+            can_dispose: boolean;
+        };
+    };
     surat: SuratMasuk;
     disposisiLogs: DisposisiLog[];
+    pegawaiTanpaPrivilege?: Array<{
+        id: number;
+        name: string;
+        email: string;
+    }>;
     flash?: {
         success?: string;
         error?: string;
     };
 }
 
-export default function TugasShow({ auth, surat, disposisiLogs, flash }: TugasShowProps) {
+export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPrivilege = [], flash }: TugasShowProps) {
     const [isCompleting, setIsCompleting] = useState(false);
+    const [isDelegating, setIsDelegating] = useState(false);
 
     const breadcrumbs = [
         { title: 'Dashboard', name: 'Dashboard', href: route('pegawai.dashboard') },
@@ -66,11 +83,26 @@ export default function TugasShow({ auth, surat, disposisiLogs, flash }: TugasSh
         catatan_selesai: ''
     });
 
+    const { data: delegasiData, setData: setDelegasiData, post: postDelegasi, processing: processingDelegasi, errors: delegasiErrors, reset: resetDelegasi } = useForm({
+        pegawai_id: '',
+        catatan: ''
+    });
+
     const handleComplete = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('pegawai.tugas.selesaikan', surat.id), {
             onSuccess: () => {
                 setIsCompleting(false);
+            }
+        });
+    };
+
+    const handleDelegasi = (e: React.FormEvent) => {
+        e.preventDefault();
+        postDelegasi(route('pegawai.tugas.delegasi', surat.id), {
+            onSuccess: () => {
+                resetDelegasi();
+                setIsDelegating(false);
             }
         });
     };
@@ -305,6 +337,90 @@ export default function TugasShow({ auth, surat, disposisiLogs, flash }: TugasSh
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {/* Form Delegasi untuk Pegawai Privileged */}
+                        {surat.status_disposisi === 'pegawai' && auth.user.can_dispose && pegawaiTanpaPrivilege.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <Forward className="h-5 w-5" />
+                                        Delegasikan Tugas
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Tugaskan kepada pegawai lain untuk menyelesaikan
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {!isDelegating ? (
+                                        <Button 
+                                            onClick={() => setIsDelegating(true)} 
+                                            variant="outline"
+                                            className="w-full"
+                                        >
+                                            <Users className="h-4 w-4 mr-2" />
+                                            Delegasikan ke Pegawai Lain
+                                        </Button>
+                                    ) : (
+                                        <form onSubmit={handleDelegasi} className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="pegawai_id">Pilih Pegawai *</Label>
+                                                <Select 
+                                                    value={delegasiData.pegawai_id} 
+                                                    onValueChange={(value) => setDelegasiData('pegawai_id', value)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih pegawai untuk menangani tugas" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {pegawaiTanpaPrivilege.map((pegawai) => (
+                                                            <SelectItem key={pegawai.id} value={pegawai.id.toString()}>
+                                                                <div>
+                                                                    <div className="font-medium">{pegawai.name}</div>
+                                                                    <div className="text-sm text-gray-500">{pegawai.email}</div>
+                                                                </div>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {delegasiErrors.pegawai_id && (
+                                                    <p className="text-red-600 text-sm mt-1">{delegasiErrors.pegawai_id}</p>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="catatan">Catatan Delegasi</Label>
+                                                <Textarea
+                                                    id="catatan"
+                                                    placeholder="Berikan instruksi atau catatan untuk pegawai..."
+                                                    value={delegasiData.catatan}
+                                                    onChange={(e) => setDelegasiData('catatan', e.target.value)}
+                                                    rows={3}
+                                                />
+                                                {delegasiErrors.catatan && (
+                                                    <p className="text-red-600 text-sm mt-1">{delegasiErrors.catatan}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    type="submit" 
+                                                    disabled={processingDelegasi}
+                                                    className="flex-1"
+                                                >
+                                                    <Forward className="h-4 w-4 mr-2" />
+                                                    {processingDelegasi ? 'Memproses...' : 'Delegasikan'}
+                                                </Button>
+                                                <Button 
+                                                    type="button" 
+                                                    variant="outline"
+                                                    onClick={() => setIsDelegating(false)}
+                                                >
+                                                    Batal
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
 
                         {/* Form Penyelesaian */}
                         {surat.status_disposisi === 'pegawai' && (

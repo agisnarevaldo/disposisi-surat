@@ -79,9 +79,9 @@ export default function TugasIndex({ auth, suratMasuk, flash }: TugasIndexProps)
     // Filter dan search
     const filteredSurat = suratMasuk.filter(surat => {
         const matchesSearch = 
-            surat.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            surat.perihal.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            surat.asal_surat.toLowerCase().includes(searchTerm.toLowerCase());
+            (surat.nomor_surat?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (surat.perihal?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (surat.asal_surat?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
         
         const matchesStatus = statusFilter === 'all' || surat.status_disposisi === statusFilter;
         

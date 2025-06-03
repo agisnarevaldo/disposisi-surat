@@ -40,6 +40,7 @@ interface DashboardProps {
             name: string;
             email: string;
             role: string;
+            can_dispose: boolean;
         };
     };
     flash?: {
@@ -86,12 +87,21 @@ export default function PegawaiDashboard({ auth, flash, dashboardData }: Dashboa
                         <p className="text-gray-600">Selamat datang, {auth.user.name}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link href={route('pegawai.tugas.index')}>
-                            <Button>
-                                <FileEdit className="h-4 w-4 mr-2" />
-                                Kelola Tugas
-                            </Button>
-                        </Link>
+                        {auth.user.can_dispose ? (
+                            <Link href={route('pegawai.tugas.index')}>
+                                <Button>
+                                    <FileEdit className="h-4 w-4 mr-2" />
+                                    Kelola Tugas
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link href={route('tugas-saya.index')}>
+                                <Button>
+                                    <FileEdit className="h-4 w-4 mr-2" />
+                                    Tugas Saya
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -195,7 +205,7 @@ export default function PegawaiDashboard({ auth, flash, dashboardData }: Dashboa
                                                 </div>
                                             </div>
                                             <Link 
-                                                href={route('pegawai.tugas.show', tugas.id)}
+                                                href={auth.user.can_dispose ? route('pegawai.tugas.show', tugas.id) : route('tugas-saya.show', tugas.id)}
                                                 className="ml-3"
                                             >
                                                 <Button size="sm" variant="outline">
@@ -213,7 +223,7 @@ export default function PegawaiDashboard({ auth, flash, dashboardData }: Dashboa
                             </div>
                             {dashboardData.recentTugas.length > 5 && (
                                 <div className="mt-4 pt-4 border-t">
-                                    <Link href={route('pegawai.tugas.index')}>
+                                    <Link href={auth.user.can_dispose ? route('pegawai.tugas.index') : route('tugas-saya.index')}>
                                         <Button variant="outline" className="w-full">
                                             Lihat Semua Tugas
                                             <ArrowRight className="h-4 w-4 ml-2" />
@@ -237,38 +247,77 @@ export default function PegawaiDashboard({ auth, flash, dashboardData }: Dashboa
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                <Link href={route('pegawai.tugas.index')}>
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <FileEdit className="h-4 w-4 mr-2" />
-                                        Kelola Tugas Disposisi
-                                    </Button>
-                                </Link>
-                                
-                                {dashboardData.tugasMenunggu > 0 && (
-                                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                            <h4 className="font-medium text-yellow-900">Perhatian!</h4>
-                                        </div>
-                                        <p className="text-sm text-yellow-700">
-                                            Anda memiliki {dashboardData.tugasMenunggu} tugas yang perlu segera ditangani.
-                                        </p>
-                                        <Link href={route('pegawai.tugas.index')} className="mt-2 inline-block">
-                                            <Button size="sm" variant="outline" className="border-yellow-300 hover:bg-yellow-100">
-                                                Lihat Tugas
+                                {auth.user.can_dispose ? (
+                                    <>
+                                        <Link href={route('pegawai.tugas.index')}>
+                                            <Button variant="outline" className="w-full justify-start">
+                                                <FileEdit className="h-4 w-4 mr-2" />
+                                                Kelola Tugas Disposisi
                                             </Button>
                                         </Link>
-                                    </div>
-                                )}
+                                        
+                                        {dashboardData.tugasMenunggu > 0 && (
+                                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                                    <h4 className="font-medium text-yellow-900">Perhatian!</h4>
+                                                </div>
+                                                <p className="text-sm text-yellow-700">
+                                                    Anda memiliki {dashboardData.tugasMenunggu} tugas yang perlu segera ditangani atau didelegasikan.
+                                                </p>
+                                                <Link href={route('pegawai.tugas.index')} className="mt-2 inline-block">
+                                                    <Button size="sm" variant="outline" className="border-yellow-300 hover:bg-yellow-100">
+                                                        Kelola Tugas
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        )}
 
-                                <div className="pt-4 border-t">
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                        <h4 className="font-medium text-blue-900 mb-2">Tips Pegawai</h4>
-                                        <p className="text-sm text-blue-700">
-                                            Prioritaskan tugas berdasarkan urgensi dan tanggal masuk surat. Jangan lupa untuk menandai tugas sebagai selesai setelah Anda menyelesaikannya.
-                                        </p>
-                                    </div>
-                                </div>
+                                        <div className="pt-4 border-t">
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                <h4 className="font-medium text-blue-900 mb-2">Tips Pegawai dengan Privilege</h4>
+                                                <p className="text-sm text-blue-700">
+                                                    Sebagai pegawai dengan privilege disposisi, Anda dapat menyelesaikan tugas sendiri atau mendelegasikannya ke pegawai lain. Prioritaskan berdasarkan urgensi dan beban kerja tim.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link href={route('tugas-saya.index')}>
+                                            <Button variant="outline" className="w-full justify-start">
+                                                <FileEdit className="h-4 w-4 mr-2" />
+                                                Lihat Tugas Saya
+                                            </Button>
+                                        </Link>
+                                        
+                                        {dashboardData.tugasMenunggu > 0 && (
+                                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                                    <h4 className="font-medium text-yellow-900">Perhatian!</h4>
+                                                </div>
+                                                <p className="text-sm text-yellow-700">
+                                                    Anda memiliki {dashboardData.tugasMenunggu} tugas yang perlu segera diselesaikan.
+                                                </p>
+                                                <Link href={route('tugas-saya.index')} className="mt-2 inline-block">
+                                                    <Button size="sm" variant="outline" className="border-yellow-300 hover:bg-yellow-100">
+                                                        Lihat Tugas
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        )}
+
+                                        <div className="pt-4 border-t">
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                <h4 className="font-medium text-blue-900 mb-2">Tips Pegawai</h4>
+                                                <p className="text-sm text-blue-700">
+                                                    Prioritaskan tugas berdasarkan urgensi dan tanggal masuk surat. Jangan lupa untuk menandai tugas sebagai selesai setelah Anda menyelesaikannya.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
