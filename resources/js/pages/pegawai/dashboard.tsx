@@ -78,8 +78,8 @@ export default function PegawaiDashboard({ auth, flash, dashboardData }: Dashboa
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard Pegawai" />
-            
-            <div className="space-y-6">
+
+            <div className="container mx-auto p-4 space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
