@@ -289,15 +289,35 @@ class DisposisiController extends Controller
             abort(403);
         }
 
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Ambil daftar pegawai tanpa privilege untuk delegasi (jika user memiliki privilege)
+        $pegawaiTanpaPrivilege = [];
+        if ($user->canDispose()) {
+            $pegawaiTanpaPrivilege = User::where('role', 'pegawai')
+                ->where('can_dispose', false)
+                ->get();
+        }
+
         // Ambil riwayat disposisi
         $disposisiLogs = DisposisiLog::with(['changedBy', 'disposisiKeUser'])
             ->where('surat_masuk_id', $id)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return Inertia::render('pegawai/disposisi/show', [
+        return Inertia::render('pegawai/tugas/show', [
             'surat' => $surat,
-            'disposisiLogs' => $disposisiLogs
+            'disposisiLogs' => $disposisiLogs,
+            'pegawaiTanpaPrivilege' => $pegawaiTanpaPrivilege,
+            'auth' => [
+                'user' => [
+                    'id' => Auth::id(),
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'can_dispose' => $user->canDispose(),
+                ]
+            ]
         ]);
     }
 
@@ -374,6 +394,9 @@ class DisposisiController extends Controller
     public function dashboardPegawai()
     {
         $pegawaiId = Auth::id();
+
+        /** @var User $user */
+        $user = Auth::user();
         
         // Ambil statistik tugas untuk Pegawai
         $tugasList = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
@@ -414,7 +437,16 @@ class DisposisiController extends Controller
         ];
 
         return Inertia::render('pegawai/dashboard', [
-            'dashboardData' => $dashboardData
+            'dashboardData' => $dashboardData,
+            'auth' => [
+                'user' => [
+                    'id' => Auth::id(),
+                    'name' => Auth::user()->name,
+                    'email' => Auth::user()->email,
+                    'role' => Auth::user()->role,
+                    'can_dispose' => $user->canDispose(),
+                ]
+            ]
         ]);
     }
 
@@ -718,7 +750,64 @@ class DisposisiController extends Controller
             'catatan' => $request->catatan_selesai
         ]);
 
-        return redirect()->route('tugas-saya.index')
-            ->with('success', 'Tugas berhasil diselesaikan.');
+        // Redirect based on user privilege
+        if ($user->canDispose() && $user->role === 'pegawai') {
+            return redirect()->route('pegawai.tugas.index')
+                ->with('success', 'Tugas berhasil diselesaikan.');
+        } else {
+            return redirect()->route('tugas-saya.index')
+                ->with('success', 'Tugas berhasil diselesaikan.');
+        }
+    }
+
+    // Method untuk pegawai privileged mendelegasikan tugas
+    public function delegasiTugasPegawai(Request $request, $id)
+    {
+        $request->validate([
+            'pegawai_id' => 'required|exists:users,id',
+            'catatan' => 'nullable|string|max:1000'
+        ]);
+
+        $surat = SuratMasuk::findOrFail($id);
+        $targetPegawai = User::findOrFail($request->pegawai_id);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Pastikan user memiliki privilege disposisi
+        if (!$user->canDispose()) {
+            return back()->withErrors(['error' => 'Anda tidak memiliki hak untuk melakukan disposisi.']);
+        }
+
+        // Pastikan surat sedang dalam tahap pegawai dan ditugaskan ke user ini
+        if ($surat->status_disposisi !== 'pegawai' || $surat->pegawai_id !== Auth::id()) {
+            return back()->withErrors(['error' => 'Anda tidak berwenang untuk mendelegasikan surat ini.']);
+        }
+
+        // Pastikan target pegawai TIDAK memiliki privilege disposisi (user biasa)
+        if ($targetPegawai->canDispose() || in_array($targetPegawai->role, ['admin', 'kepala', 'pmo'])) {
+            return back()->withErrors(['error' => 'User yang dipilih harus pegawai tanpa privilege disposisi.']);
+        }
+
+        // Update status surat
+        $statusLama = $surat->status_disposisi;
+        $surat->update([
+            'status_disposisi' => 'selesai', // Surat selesai karena sudah sampai ke pelaksana
+            'pegawai_id' => $request->pegawai_id,
+            'assigned_user_id' => $request->pegawai_id,
+            'disposisi_at' => now()
+        ]);
+
+        // Catat log disposisi
+        DisposisiLog::create([
+            'surat_masuk_id' => $surat->id,
+            'status_lama' => $statusLama,
+            'status_baru' => 'selesai',
+            'changed_by_user_id' => Auth::id(),
+            'catatan' => $request->catatan,
+            'disposisi_ke_user_id' => $request->pegawai_id
+        ]);
+
+        return redirect()->route('pegawai.tugas.index')->with('success', "Tugas berhasil didelegasikan ke: {$targetPegawai->name}");
     }
 }
