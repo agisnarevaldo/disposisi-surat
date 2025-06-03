@@ -91,11 +91,8 @@ Route::middleware(['auth', 'pegawai'])->prefix('pegawai')->name('pegawai.')->gro
     // Route untuk tugas disposisi (privileged pegawai)
     Route::get('/tugas', [App\Http\Controllers\DisposisiController::class, 'indexPegawai'])->name('tugas.index');
     Route::get('/tugas/{id}', [App\Http\Controllers\DisposisiController::class, 'showPegawai'])->name('tugas.show');
-    Route::post('/tugas/{id}/selesaikan', [App\Http\Controllers\DisposisiController::class, 'selesaikan'])->name('tugas.selesaikan');
-    
-    // Route untuk delegasi ke pegawai tanpa privilege (untuk pegawai dengan privilege)
-    Route::get('/tugas/{id}/delegasi', [App\Http\Controllers\DisposisiController::class, 'showDelegasi'])->name('tugas.delegasi');
-    Route::post('/tugas/{id}/delegasi-ke-non-privilege', [App\Http\Controllers\DisposisiController::class, 'delegasiKeNonPrivilege'])->name('tugas.delegasi-ke-non-privilege');
+    Route::post('/tugas/{id}/selesaikan', [App\Http\Controllers\DisposisiController::class, 'selesaikanTugas'])->name('tugas.selesaikan');
+    Route::post('/tugas/{id}/delegasi', [App\Http\Controllers\DisposisiController::class, 'delegasiTugasPegawai'])->name('tugas.delegasi');
 
     // Route untuk cetak dan laporan
     Route::get('/tugas/{id}/cetak', [App\Http\Controllers\DisposisiController::class, 'cetakPegawai'])->name('tugas.cetak');
@@ -109,40 +106,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tugas-saya/{id}/selesaikan', [App\Http\Controllers\DisposisiController::class, 'selesaikanTugas'])->name('tugas-saya.selesaikan');
     Route::get('/tugas-saya/{id}/cetak', [App\Http\Controllers\DisposisiController::class, 'cetakDisposisi'])->name('tugas-saya.cetak');
 });
-
-// end
-
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/dashboard/kepala', [DashboardKepalaController::class, 'index'])->name('dashboard.kepala');
-//     Route::get('/dashboard/pmo', [DashboardPMOController::class, 'index'])->name('dashboard.pmo');
-//     Route::get('/dashboard/staff', [DashboardStaffController::class, 'index'])->name('dashboard.staff');
-// });
-
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/surat-keluar',  [SuratKeluarController::class, 'index'])->name('surat-keluar.index');
-//     Route::get('/surat-keluar/create', [SuratKeluarController::class, 'create'])->name('surat-keluar.create');
-//     Route::post('/surat-keluar', [SuratKeluarController::class, 'store'])->name('surat-keluar.store');
-//     Route::get('/surat-keluar/{id}', [SuratKeluarController::class, 'show'])->name('surat-keluar.show');
-//     Route::get('/surat-keluar/{id}/edit', [SuratKeluarController::class, 'edit'])->name('surat-keluar.edit');
-//     Route::put('/surat-keluar/{id}', [SuratKeluarController::class, 'update'])->name('surat-keluar.update');
-//     Route::delete('/surat-keluar/{id}', [SuratKeluarController::class, 'destroy'])->name('surat-keluar.destroy');
-// });
-
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/surat-keluar/{id}/tindak-lanjut', [SuratKeluarController::class, 'tindakLanjut'])->name('surat-keluar.tindak-lanjut');
-//     Route::post('/surat-keluar/{id}/tindak-lanjut', [SuratKeluarController::class, 'simpanTindakLanjut'])->name('surat-keluar.simpan-tindak-lanjut');
-// });
-
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/surat-masuk', [SuratMasukController::class, 'index'])->name('surat-masuk.index');
-//     Route::get('/surat-masuk/create', [SuratMasukController::class, 'create'])->name('surat-masuk.create');
-//     Route::post('/surat-masuk', [SuratMasukController::class, 'store'])->name('surat-masuk.store');
-//     Route::get('/surat-masuk/{id}', [SuratMasukController::class, 'show'])->name('surat-masuk.show');
-//     Route::post('/surat-masuk/{id}/mark-as-read', [SuratMasukController::class, 'markAsRead'])->name('surat-masuk.markAsRead');
-//     Route::get('/surat-masuk/{id}/edit', [SuratMasukController::class, 'edit'])->name('surat-masuk.edit');
-//     Route::put('/surat-masuk/{id}', [SuratMasukController::class, 'update'])->name('surat-masuk.update');
-//     Route::delete('/surat-masuk/{id}', [SuratMasukController::class, 'destroy'])->name('surat-masuk.destroy');
-// });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
