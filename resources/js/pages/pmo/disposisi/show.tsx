@@ -266,7 +266,7 @@ export default function DisposisiShow({ auth, surat, pegawaiUsers, disposisiLogs
                         {/* Disposisi Form */}
                         {surat.status_disposisi === 'pmo' && 
                          auth.user.role === 'pmo' && 
-                         (auth.user.can_dispose !== false) && (
+                         auth.user.can_dispose === true && (
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">

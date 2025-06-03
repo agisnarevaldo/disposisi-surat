@@ -69,9 +69,9 @@ export default function DisposisiIndex({ auth, suratMasuk, flash }: DisposisiInd
     // Filter surat berdasarkan pencarian dan status
     const filteredSurat = suratMasuk.filter(surat => {
         const matchesSearch = 
-            surat.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            surat.asal_surat.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            surat.perihal.toLowerCase().includes(searchTerm.toLowerCase());
+            (surat.nomor_surat?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (surat.asal_surat?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (surat.perihal?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
         
         const matchesStatus = statusFilter === '' || surat.status_disposisi === statusFilter;
         
