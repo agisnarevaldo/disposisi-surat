@@ -99,7 +99,7 @@ export default function TugasIndex({ auth, suratMasuk, flash }: TugasIndexProps)
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tugas Disposisi" />
             
-            <div className="space-y-6">
+            <div className="container mx-auto p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>

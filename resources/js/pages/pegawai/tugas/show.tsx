@@ -154,7 +154,7 @@ export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPriv
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detail Tugas - ${surat.nomor_surat}`} />
             
-            <div className="space-y-6">
+            <div className="container mx-auto p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
