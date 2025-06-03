@@ -193,7 +193,7 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                         {getStatusBadge(surat.status_disposisi)}
                         {surat.status_disposisi === 'diajukan' && 
                          auth.user.role === 'kepala' && 
-                         (auth.user.can_dispose !== false) &&
+                         auth.user.can_dispose === true &&
                          !surat.kepala && ( // Belum pernah didisposisi oleh kepala
                             <Button 
                                 onClick={() => setIsDisposisiMode(!isDisposisiMode)}
