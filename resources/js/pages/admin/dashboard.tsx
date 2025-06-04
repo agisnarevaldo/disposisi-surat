@@ -62,13 +62,13 @@ export default function Dashboard({ auth, userStats, suratStats }: DashboardProp
                     <div className="flex space-x-3">
                         <Link href="/admin/users/create">
                             <Button>
-                                <UserPlus className="mr-2 h-4 w-4" />
+                                <UserPlus className="h-4 w-4" />
                                 Tambah User
                             </Button>
                         </Link>
                         <Link href="/admin/surat-masuk/create">
                             <Button variant="outline">
-                                <Plus className="mr-2 h-4 w-4" />
+                                <Plus className="h-4 w-4" />
                                 Surat Masuk Baru
                             </Button>
                         </Link>
@@ -77,7 +77,7 @@ export default function Dashboard({ auth, userStats, suratStats }: DashboardProp
 
                 {/* User Statistics */}
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Statistik Pengguna</h2>
+                    <h2 className="text-xl text-primary font-semibold mb-4">Statistik Pengguna</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <Card>
                             <CardContent className="p-4">
@@ -155,7 +155,7 @@ export default function Dashboard({ auth, userStats, suratStats }: DashboardProp
 
                 {/* Surat Statistics */}
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Statistik Surat Masuk</h2>
+                    <h2 className="text-xl font-semibold text-primary mb-4">Statistik Surat Masuk</h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <Card>
                             <CardContent className="p-4">

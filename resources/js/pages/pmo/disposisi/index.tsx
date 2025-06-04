@@ -112,7 +112,7 @@ export default function DisposisiIndex({ auth, suratMasuk, flash }: DisposisiInd
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Disposisi Surat Masuk - PMO" />
             
-            <div className="container mx-auto p-4">
+            <div className="container flex flex-col gap-4 p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>

@@ -114,7 +114,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen User" />
             
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto flex flex-col gap-4 p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
@@ -136,8 +136,8 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             <div className="flex items-center space-x-2">
                                 <Users className="h-5 w-5 text-blue-600" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.total}</p>
-                                    <p className="text-sm text-gray-600">Total User</p>
+                                    <p className="text-2xl font-bold">{stats.total} User</p>
+                                    <p className="text-sm text-gray-600">Total terdaftar</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -148,7 +148,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             <div className="flex items-center space-x-2">
                                 <Crown className="h-5 w-5 text-red-600" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.admin}</p>
+                                    <p className="text-2xl font-bold">{stats.admin} User</p>
                                     <p className="text-sm text-gray-600">Admin</p>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             <div className="flex items-center space-x-2">
                                 <Shield className="h-5 w-5 text-purple-600" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.kepala}</p>
+                                    <p className="text-2xl font-bold">{stats.kepala} User</p>
                                     <p className="text-sm text-gray-600">Kepala</p>
                                 </div>
                             </div>
@@ -172,7 +172,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             <div className="flex items-center space-x-2">
                                 <UserCheck className="h-5 w-5 text-blue-600" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.pmo}</p>
+                                    <p className="text-2xl font-bold">{stats.pmo} User</p>
                                     <p className="text-sm text-gray-600">PMO</p>
                                 </div>
                             </div>
@@ -184,7 +184,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             <div className="flex items-center space-x-2">
                                 <Users className="h-5 w-5 text-green-600" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.pegawai}</p>
+                                    <p className="text-2xl font-bold">{stats.pegawai} User</p>
                                     <p className="text-sm text-gray-600">Pegawai</p>
                                 </div>
                             </div>
@@ -196,8 +196,8 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             <div className="flex items-center space-x-2">
                                 <BadgeIcon className="h-5 w-5 text-orange-600" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.can_dispose}</p>
-                                    <p className="text-sm text-gray-600">Can Dispose</p>
+                                    <p className="text-2xl font-bold">{stats.can_dispose} User</p>
+                                    <p className="text-sm text-gray-600">Hak Disposisi</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -216,7 +216,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                                 />
                             </div>
-                            <div className="w-full md:w-48">
+                            <div className="w-max">
                                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Filter role" />
@@ -232,7 +232,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                             </div>
                             <div className="flex gap-2">
                                 <Button onClick={handleSearch}>
-                                    <Search className="mr-2 h-4 w-4" />
+                                    <Search className="h-4 w-4" />
                                     Cari
                                 </Button>
                                 <Button variant="outline" onClick={handleReset}>
@@ -249,22 +249,22 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className="border-b bg-gray-50">
-                                        <th className="text-left p-4 font-medium text-gray-900">User</th>
-                                        <th className="text-left p-4 font-medium text-gray-900">Role</th>
-                                        <th className="text-left p-4 font-medium text-gray-900">Jabatan</th>
-                                        <th className="text-left p-4 font-medium text-gray-900">Kontak</th>
-                                        <th className="text-left p-4 font-medium text-gray-900">Privilege</th>
-                                        <th className="text-left p-4 font-medium text-gray-900">Aksi</th>
+                                    <tr className="border-b">
+                                        <th className="text-left p-4 font-medium">User</th>
+                                        <th className="text-left p-4 font-medium">Role</th>
+                                        <th className="text-left p-4 font-medium">Jabatan</th>
+                                        <th className="text-left p-4 font-medium">Kontak</th>
+                                        <th className="text-left p-4 font-medium">Privilege</th>
+                                        <th className="text-left p-4 font-medium">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {users.data.map((user) => (
-                                        <tr key={user.id} className="border-b hover:bg-gray-50">
+                                        <tr key={user.id} className="border-b hover:bg-foreground/10">
                                             <td className="p-4">
                                                 <div>
-                                                    <div className="font-medium text-gray-900">{user.name}</div>
-                                                    <div className="text-sm text-gray-500">{user.email}</div>
+                                                    <div className="font-medium">{user.name}</div>
+                                                    <div className="text-sm text-primary">{user.email}</div>
                                                     <div className="text-xs text-gray-400">NIP: {user.nip}</div>
                                                 </div>
                                             </td>
@@ -275,7 +275,7 @@ export default function UsersIndex({ users, filters, stats }: UsersIndexProps) {
                                                 </Badge>
                                             </td>
                                             <td className="p-4">
-                                                <div className="text-sm text-gray-900">{user.jabatan}</div>
+                                                <div className="text-sm text-gray-600">{user.jabatan}</div>
                                             </td>
                                             <td className="p-4">
                                                 <div className="space-y-1">

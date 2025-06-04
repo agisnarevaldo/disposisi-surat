@@ -58,11 +58,11 @@ export default function EditUser({ user }: EditUserProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit User - ${user.name}`} />
             
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto p-4 flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Edit User</h1>
+                        <h1 className="text-3xl font-bold">Edit User</h1>
                         <p className="text-gray-600">Perbarui informasi pengguna {user.name}</p>
                     </div>
                     <Button variant="outline" onClick={() => window.history.back()}>
@@ -229,7 +229,7 @@ export default function EditUser({ user }: EditUserProps) {
                             </div>
 
                             {/* Privilege Section */}
-                            <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <div className="space-y-4 p-4 bg-card border border-primary/50 rounded-lg">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <Label htmlFor="can_dispose" className="text-base font-medium">

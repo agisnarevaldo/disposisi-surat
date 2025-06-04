@@ -82,12 +82,12 @@ export default function PMODashboard({ auth, flash, dashboardData }: DashboardPr
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard PMO" />
             
-            <div className="space-y-6">
+            <div className="container p-4 mx-auto space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Dashboard PMO</h1>
-                        <p className="text-gray-600">Selamat datang, {auth.user.name}</p>
+                        <p className="text-gray-600">Login sebagai: {auth.user.name}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <Link href={route('pmo.disposisi.index')}>

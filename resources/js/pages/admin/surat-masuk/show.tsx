@@ -50,7 +50,7 @@ const getStatusBadge = (status: string) => {
         'kepala': { variant: 'default', label: 'Di Kepala', color: 'text-purple-600' },
         'pmo': { variant: 'default', label: 'Di PMO', color: 'text-orange-600' },
         'pegawai': { variant: 'default', label: 'Di Pegawai', color: 'text-indigo-600' },
-        'selesai': { variant: 'default', label: 'Selesai', color: 'text-green-600' },
+        'selesai': { variant: 'secondary', label: 'Selesai', color: 'text-white' },
     };
     
     const config = variants[status] || { variant: 'outline', label: status, color: 'text-gray-600' };
@@ -99,7 +99,7 @@ export default function Show() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detail Surat - ${suratMasuk.no_surat}`} />
             
-            <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
+            <div className="container flex flex-col gap-4 mx-auto p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">

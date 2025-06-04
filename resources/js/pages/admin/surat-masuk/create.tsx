@@ -85,13 +85,13 @@ export default function Create() {
             
             <div className="flex flex-col gap-6 p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/admin/surat-masuk" className="flex items-center justify-center w-10 h-10 rounded-lg border hover:bg-gray-50">
+                    <Link href="/admin/surat-masuk" className="flex items-center justify-center w-10 h-10 rounded-lg border hover:bg-accent">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <h1 className="text-2xl font-bold">Tambah Surat Masuk</h1>
                 </div>
 
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="container mx-auto p-6">
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* No Agenda */}
