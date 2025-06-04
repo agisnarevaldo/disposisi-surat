@@ -83,7 +83,7 @@ export default function Create() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tambah Surat Masuk - Admin" />
             
-            <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
+            <div className="flex flex-col gap-6 p-4">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/surat-masuk" className="flex items-center justify-center w-10 h-10 rounded-lg border hover:bg-gray-50">
                         <ArrowLeft className="h-5 w-5" />

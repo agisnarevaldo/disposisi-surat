@@ -86,6 +86,7 @@ interface DisposisiLog {
 interface DisposisiShowProps {
     auth: {
         user: {
+            id: number;
             name: string;
             role: string;
             can_dispose?: boolean;
@@ -191,10 +192,7 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                     </div>
                     <div className="flex items-center gap-3">
                         {getStatusBadge(surat.status_disposisi)}
-                        {surat.status_disposisi === 'diajukan' && 
-                         auth.user.role === 'kepala' && 
-                         auth.user.can_dispose === true &&
-                         !surat.kepala && ( // Belum pernah didisposisi oleh kepala
+                        {surat.status_disposisi === 'diajukan' && auth.user.role === 'kepala' && (
                             <Button 
                                 onClick={() => setIsDisposisiMode(!isDisposisiMode)}
                                 className="bg-blue-600 hover:bg-blue-700"
@@ -202,12 +200,6 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                                 <Send className="w-4 h-4 mr-2" />
                                 Disposisi Surat
                             </Button>
-                        )}
-                        {surat.kepala && surat.kepala.name === auth.user.name && (
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Sudah Didisposisi
-                            </Badge>
                         )}
                     </div>
                 </div>
@@ -289,7 +281,7 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                         </Card>
 
                         {/* Form Disposisi */}
-                        {isDisposisiMode && surat.status_disposisi === 'diajukan' && !surat.kepala && (
+                        {isDisposisiMode && surat.status_disposisi === 'diajukan' && auth.user.role === 'kepala' && (
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
@@ -409,16 +401,18 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
 
                                     <div className="flex items-center gap-3">
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                            surat.kepala ? 'bg-green-100' : 'bg-gray-100'
+                                            surat.status_disposisi !== 'diajukan' ? 'bg-green-100' : 'bg-yellow-100'
                                         }`}>
                                             <User className={`w-4 h-4 ${
-                                                surat.kepala ? 'text-green-600' : 'text-gray-400'
+                                                surat.status_disposisi !== 'diajukan' ? 'text-green-600' : 'text-yellow-600'
                                             }`} />
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-medium">Kepala</p>
                                             <p className="text-xs text-gray-500">
-                                                {surat.kepala?.name || 'Belum didisposisi'}
+                                                {surat.status_disposisi === 'diajukan' 
+                                                    ? `${auth.user.name} (Menunggu disposisi)` 
+                                                    : `${auth.user.name} (Sudah disposisi)`}
                                             </p>
                                         </div>
                                     </div>

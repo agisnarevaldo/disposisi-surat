@@ -100,7 +100,7 @@ export default function TugasSayaIndex({ auth, suratMasuk, flash }: TugasSayaInd
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tugas Saya" />
             
-            <div className="space-y-6">
+            <div className="container mx-auto p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
