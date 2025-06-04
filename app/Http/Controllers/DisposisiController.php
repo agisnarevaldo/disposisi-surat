@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DisposisiController extends Controller
 {
@@ -17,14 +18,10 @@ class DisposisiController extends Controller
         /** @var User $user */
         $user = Auth::user();
         
-        // Pastikan kepala memiliki privilege disposisi (seharusnya otomatis untuk kepala)
-        if (!$user->canDispose()) {
-            abort(403, 'Anda tidak memiliki hak untuk mengakses disposisi.');
-        }
-
+        // Tampilkan surat yang diajukan ke kepala ini dan belum didisposisi
         $suratMasuk = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
             ->where('status_disposisi', 'diajukan')
-            ->orWhere('kepala_id', Auth::id())
+            ->where('kepala_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -36,23 +33,15 @@ class DisposisiController extends Controller
     // Halaman detail surat untuk disposisi kepala
     public function showKepala($id)
     {
-        /** @var User $user */
-        $user = Auth::user();
-        
-        // Pastikan kepala memiliki privilege disposisi
-        if (!$user->canDispose()) {
-            abort(403, 'Anda tidak memiliki hak untuk melakukan disposisi.');
-        }
-
         $surat = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai', 'assignedUser'])
             ->findOrFail($id);
 
-        // Pastikan kepala belum pernah melakukan disposisi (hanya bisa sekali disposisi)
-        if ($surat->kepala_id && $surat->kepala_id == Auth::id()) {
-            return back()->withErrors(['error' => 'Anda sudah melakukan disposisi untuk surat ini.']);
+        // Pastikan surat diajukan ke kepala ini dan masih dalam status diajukan
+        if ($surat->status_disposisi !== 'diajukan' || $surat->kepala_id !== Auth::id()) {
+            return back()->withErrors(['error' => 'Surat tidak dapat diakses atau sudah didisposisi.']);
         }
 
-        // Ambil daftar user dengan privilege disposisi (kecuali kepala dan admin)
+        // Ambil daftar user dengan privilege disposisi (PMO dan Pegawai)
         $availableUsers = User::whereIn('role', ['pmo', 'pegawai'])
             ->where('can_dispose', true)
             ->get();
@@ -70,9 +59,9 @@ class DisposisiController extends Controller
             'auth' => [
                 'user' => [
                     'id' => Auth::id(),
-                    'name' => $user->name,
-                    'role' => $user->role,
-                    'can_dispose' => $user->canDispose(),
+                    'name' => Auth::user()->name,
+                    'role' => Auth::user()->role,
+                    'can_dispose' => true,
                 ]
             ]
         ]);
@@ -89,22 +78,9 @@ class DisposisiController extends Controller
         $surat = SuratMasuk::findOrFail($id);
         $targetUser = User::findOrFail($request->user_id);
 
-        /** @var User $user */
-        $user = Auth::user();
-
-        // Pastikan hanya kepala yang bisa disposisi dan status masih 'diajukan'
-        if ($surat->status_disposisi !== 'diajukan' || $user->role !== 'kepala') {
+        // Validasi dasar
+        if ($surat->status_disposisi !== 'diajukan' || $surat->kepala_id !== Auth::id()) {
             return back()->withErrors(['error' => 'Tidak dapat melakukan disposisi pada surat ini.']);
-        }
-
-        // Pastikan kepala belum pernah melakukan disposisi (hanya bisa sekali disposisi)
-        if ($surat->kepala_id && $surat->kepala_id == Auth::id()) {
-            return back()->withErrors(['error' => 'Anda sudah melakukan disposisi untuk surat ini.']);
-        }
-
-        // Pastikan kepala memiliki privilege disposisi
-        if (!$user->canDispose()) {
-            return back()->withErrors(['error' => 'Anda tidak memiliki hak untuk melakukan disposisi.']);
         }
 
         // Pastikan target user memiliki privilege disposisi dan bukan admin/kepala
@@ -115,16 +91,15 @@ class DisposisiController extends Controller
         // Tentukan status berdasarkan role target user
         $newStatus = $targetUser->role; // 'pmo' atau 'pegawai'
         
-        // Update status surat dengan assigned_user_id untuk flexible assignment
+        // Update status surat
         $statusLama = $surat->status_disposisi;
         $updateData = [
             'status_disposisi' => $newStatus,
-            'kepala_id' => Auth::id(),
             'assigned_user_id' => $request->user_id,
             'disposisi_at' => now()
         ];
 
-        // Update field spesifik berdasarkan role untuk backward compatibility
+        // Update field spesifik berdasarkan role
         if ($targetUser->role === 'pmo') {
             $updateData['pmo_id'] = $request->user_id;
         } elseif ($targetUser->role === 'pegawai') {
@@ -478,23 +453,25 @@ class DisposisiController extends Controller
     {
         $kepalaId = Auth::id();
         
-        // Ambil statistik surat untuk Kepala
-        $suratMasuk = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai']);
-        
-        // Untuk kepala, tampilkan semua surat yang perlu disposisi atau sudah didisposisi oleh kepala
-        $allSurat = $suratMasuk->where(function($query) use ($kepalaId) {
-            $query->where('status_disposisi', 'diajukan')  // Surat yang perlu disposisi
-                  ->orWhere('kepala_id', $kepalaId);        // Surat yang sudah didisposisi oleh kepala ini
-        })->get();
+        // Surat yang menunggu disposisi oleh kepala ini
+        $suratMenunggu = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
+            ->where('status_disposisi', 'diajukan')
+            ->where('kepala_id', $kepalaId)
+            ->get();
+            
+        // Surat yang sudah didisposisi oleh kepala ini
+        $suratSudahDisposisi = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
+            ->where('kepala_id', $kepalaId)
+            ->whereIn('status_disposisi', ['pmo', 'pegawai', 'selesai'])
+            ->get();
         
         $dashboardData = [
-            'totalSurat' => $allSurat->count(),
-            'menungguDisposisi' => $allSurat->where('status_disposisi', 'diajukan')->count(),
-            'sudahDisposisi' => $allSurat->whereIn('status_disposisi', ['pmo', 'pegawai', 'selesai'])
-                                         ->where('kepala_id', $kepalaId)->count(),
-            'suratSelesai' => $allSurat->where('status_disposisi', 'selesai')
-                                      ->where('kepala_id', $kepalaId)->count(),
-            'recentSurat' => $allSurat->where('status_disposisi', 'diajukan')
+            'totalSurat' => $suratMenunggu->count() + $suratSudahDisposisi->count(),
+            'menungguDisposisi' => $suratMenunggu->count(),
+            'sudahDisposisi' => $suratSudahDisposisi->count(),
+            'suratSelesai' => $suratSudahDisposisi->where('status_disposisi', 'selesai')->count(),
+            // Tampilkan surat yang masih menunggu disposisi di dashboard
+            'recentSurat' => $suratMenunggu
                 ->sortByDesc('created_at')
                 ->take(10)
                 ->map(function($surat) {
@@ -505,8 +482,6 @@ class DisposisiController extends Controller
                         'tanggal_masuk' => $surat->tanggal_masuk,
                         'status_disposisi' => $surat->status_disposisi,
                         'pengirim' => $surat->pengirim,
-                        'pmo' => $surat->pmo ? ['name' => $surat->pmo->name] : null,
-                        'pegawai' => $surat->pegawai ? ['name' => $surat->pegawai->name] : null,
                         'prioritas' => $surat->prioritas ?? 'sedang',
                         'created_at' => $surat->created_at,
                     ];
@@ -517,7 +492,44 @@ class DisposisiController extends Controller
             'dashboardData' => $dashboardData
         ]);
     }
-    
+
+    // Method untuk melihat riwayat disposisi kepala
+    public function riwayatKepala()
+    {
+        $kepalaId = Auth::id();
+        
+        // Ambil semua surat yang sudah didisposisi oleh kepala ini
+        $riwayatDisposisi = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
+            ->where('kepala_id', $kepalaId)
+            ->orderBy('disposisi_at', 'desc')
+            ->get()
+            ->map(function($surat) {
+                return [
+                    'id' => $surat->id,
+                    'no_surat' => $surat->no_surat,
+                    'hal_surat' => $surat->hal_surat,
+                    'pengirim' => $surat->pengirim,
+                    'tanggal_diterima' => $surat->tanggal_diterima,
+                    'status_disposisi' => $surat->status_disposisi,
+                    'disposisi_at' => $surat->disposisi_at,
+                    'pmo' => $surat->pmo ? ['id' => $surat->pmo->id, 'name' => $surat->pmo->name] : null,
+                    'pegawai' => $surat->pegawai ? ['id' => $surat->pegawai->id, 'name' => $surat->pegawai->name] : null,
+                    'created_at' => $surat->created_at,
+                ];
+            });
+
+        return Inertia::render('kepala/riwayat/index', [
+            'riwayatDisposisi' => $riwayatDisposisi,
+            'auth' => [
+                'user' => [
+                    'id' => Auth::id(),
+                    'name' => Auth::user()->name,
+                    'role' => Auth::user()->role,
+                ]
+            ]
+        ]);
+    }
+
     // Method untuk user dengan privilege mendelegasikan ke user tanpa privilege
     public function delegasiKeNonPrivilege(Request $request, $id)
     {
