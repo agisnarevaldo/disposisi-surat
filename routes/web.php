@@ -60,9 +60,7 @@ Route::middleware(['auth', 'kepala'])->prefix('kepala')->name('kepala.')->group(
     Route::post('/disposisi/{id}/to-user', [App\Http\Controllers\DisposisiController::class, 'disposisiKeUser'])->name('disposisi.to-user');
 
     // Route untuk riwayat disposisi
-    Route::get('/riwayat', function () {
-        return Inertia::render('kepala/riwayat/index');
-    })->name('riwayat.index');
+    Route::get('/riwayat', [App\Http\Controllers\DisposisiController::class, 'riwayatKepala'])->name('riwayat.index');
 });
 
 // Route untuk PMO
