@@ -48,6 +48,7 @@ interface DashboardProps {
         user: {
             name: string;
             role: string;
+            nip: string;
         };
     };
     flash?: {
@@ -114,10 +115,10 @@ export default function KepalaaDashboard({ auth, flash, dashboardData }: Dashboa
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            Selamat datang, {auth.user.name}
+                        <h1 className="text-3xl font-bold">
+                            {auth.user.name}
                         </h1>
-                        <p className="text-gray-600">Dashboard Kepala - Kelola disposisi surat masuk</p>
+                        <p className="text-stone-400">{auth.user.nip}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -175,7 +176,7 @@ export default function KepalaaDashboard({ auth, flash, dashboardData }: Dashboa
                 </div>
 
                 {/* Quick Actions */}
-                <Card>
+                {/* <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <TrendingUp className="h-5 w-5" />
@@ -212,7 +213,7 @@ export default function KepalaaDashboard({ auth, flash, dashboardData }: Dashboa
                             </Link>
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
 
                 {/* Recent Surat Masuk */}
                 <Card>

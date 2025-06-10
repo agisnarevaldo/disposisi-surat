@@ -144,7 +144,6 @@ export default function Index() {
                                 <TableHead>Hal Surat</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Status Baca</TableHead>
-                                <TableHead>Disposisi Ke</TableHead>
                                 <TableHead>Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -192,13 +191,6 @@ export default function Index() {
                                                     </Button>
                                                 )}
                                             </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {surat.kepala && (
-                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                                    {surat.kepala.name}
-                                                </span>
-                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex gap-1">

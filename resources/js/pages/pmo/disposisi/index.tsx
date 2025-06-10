@@ -17,7 +17,12 @@ import {
     Search,
     Filter,
     User,
-    Mail
+    Mail,
+    FileText,
+    Download,
+    Maximize2,
+    Minimize2,
+    X
 } from 'lucide-react';
 import { BreadcrumbItem } from '@/types';
 
@@ -65,6 +70,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function DisposisiIndex({ auth, suratMasuk, flash }: DisposisiIndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [showPdfPreview, setShowPdfPreview] = useState(false);
+    const [selectedSurat, setSelectedSurat] = useState<SuratMasuk | null>(null);
+    const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
 
     // Filter surat berdasarkan pencarian dan status
     const filteredSurat = suratMasuk.filter(surat => {
@@ -304,6 +312,17 @@ export default function DisposisiIndex({ auth, suratMasuk, flash }: DisposisiInd
                                             </div>
                                             
                                             <div className="flex items-center gap-2 ml-4">
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setSelectedSurat(surat);
+                                                        setShowPdfPreview(true);
+                                                    }}
+                                                >
+                                                    <FileText className="h-4 w-4 mr-2" />
+                                                    Preview PDF
+                                                </Button>
                                                 <Link href={route('pmo.disposisi.show', surat.id)}>
                                                     <Button size="sm" variant="outline">
                                                         <Eye className="h-4 w-4 mr-2" />

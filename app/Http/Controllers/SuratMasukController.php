@@ -299,4 +299,28 @@ class SuratMasukController extends Controller
         
         return response()->download($filePath);
     }
+
+    // View PDF file inline
+    public function viewFile($id)
+    {
+        $suratMasuk = SuratMasuk::findOrFail($id);
+        
+        $filePath = storage_path('app/public/' . $suratMasuk->file_surat);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+        
+        $fileExtension = pathinfo($suratMasuk->file_surat, PATHINFO_EXTENSION);
+        
+        if (strtolower($fileExtension) === 'pdf') {
+            return response()->file($filePath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . basename($suratMasuk->file_surat) . '"'
+            ]);
+        }
+        
+        // For non-PDF files, force download
+        return $this->downloadFile($id);
+    }
 }

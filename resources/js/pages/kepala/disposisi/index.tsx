@@ -175,7 +175,7 @@ export default function DisposisiIndex({ auth, suratMasuk }: DisposisiIndexProps
                 </div>
 
                 {/* Filters */}
-                <Card>
+                {/* <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Filter className="h-5 w-5" />
@@ -203,7 +203,7 @@ export default function DisposisiIndex({ auth, suratMasuk }: DisposisiIndexProps
                             </Button>
                         </div>
                     </CardContent>
-                </Card>
+                </Card> */}
 
                 {/* Surat Masuk List */}
                 <Card>

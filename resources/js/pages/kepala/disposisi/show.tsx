@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,20 +8,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { 
-    FileText, 
-    Calendar, 
-    User, 
-    Building, 
+import {
+    FileText,
+    Calendar,
+    User,
+    Building,
     MessageSquare,
     Send,
     Clock,
     CheckCircle,
     AlertTriangle,
     ArrowRight,
-    Download
+    Download,
+    Eye,
+    Maximize2,
+    Minimize2,
+    ArrowLeft
 } from 'lucide-react';
 import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SuratMasuk {
     id: number;
@@ -99,6 +104,7 @@ interface DisposisiShowProps {
 
 export default function DisposisiShow({ auth, surat, availableUsers, disposisiLogs }: DisposisiShowProps) {
     const [isDisposisiMode, setIsDisposisiMode] = useState(false);
+    const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -171,7 +177,7 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
         };
 
         const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
-        
+
         return (
             <Badge variant="secondary" className={statusInfo.className}>
                 {statusInfo.label}
@@ -182,18 +188,23 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Detail Surat - ${surat.no_surat}`} />
-            
+
             <div className="container mx-auto p-6 space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{surat.no_surat}</h1>
-                        <p className="text-gray-600">{surat.hal_surat}</p>
+                    <div className="flex items-center gap-4">
+                        <Link href="/kepala/dashboard" className="flex items-center justify-center w-10 h-10 rounded-lg border hover:bg-gray-50">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Link>
+                        <div>
+                            <h1 className="text-3xl font-bold">{surat.no_surat}</h1>
+                            <p className="text-neutral-600">{surat.hal_surat}</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-3">
                         {getStatusBadge(surat.status_disposisi)}
                         {surat.status_disposisi === 'diajukan' && auth.user.role === 'kepala' && (
-                            <Button 
+                            <Button
                                 onClick={() => setIsDisposisiMode(!isDisposisiMode)}
                                 className="bg-blue-600 hover:bg-blue-700"
                             >
@@ -203,298 +214,379 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                         )}
                     </div>
                 </div>
+                {/* Disposisi Form */}
+                {/* Form Disposisi */}
+                {isDisposisiMode && surat.status_disposisi === 'diajukan' && auth.user.role === 'kepala' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Send className="h-5 w-5" />
+                                Disposisi Surat
+                            </CardTitle>
+                            <CardDescription>
+                                Pilih user yang akan menangani surat ini
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {availableUsers.length === 0 ? (
+                                <div className="text-center py-6">
+                                    <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                        Tidak Ada User yang Tersedia
+                                    </h3>
+                                    <p className="text-gray-600">
+                                        Tidak ada user dengan hak disposisi yang tersedia saat ini.
+                                        Hubungi administrator untuk mengatur hak disposisi user.
+                                    </p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleDisposisi} className="space-y-4">
+                                    <div>
+                                        <Label htmlFor="user_id">Pilih User</Label>
+                                        <Select value={data.user_id} onValueChange={(value) => setData('user_id', value)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Pilih user untuk disposisi" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableUsers.map((user) => (
+                                                    <SelectItem key={user.id} value={user.id.toString()}>
+                                                        <div className='flex'>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-medium">{user.name}</p>
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {user.role.toUpperCase()}
+                                                                </Badge>
+                                                            </div>
+                                                            {user.jabatan && (
+                                                                <p className="text-sm mr-0.5">{user.jabatan}</p>
+                                                            )}
+                                                            {user.email && (
+                                                                <p className="text-sm">{user.email}</p>
+                                                            )}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.user_id && (
+                                            <p className="text-sm text-red-600 mt-1">{errors.user_id}</p>
+                                        )}
+                                    </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Detail Surat */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Informasi Surat */}
+                                    <div>
+                                        <Label htmlFor="catatan">Catatan Disposisi</Label>
+                                        <Textarea
+                                            id="catatan"
+                                            placeholder="Tambahkan catatan atau instruksi untuk user..."
+                                            value={data.catatan}
+                                            onChange={(e) => setData('catatan', e.target.value)}
+                                            rows={3}
+                                        />
+                                        {errors.catatan && (
+                                            <p className="text-sm text-red-600 mt-1">{errors.catatan}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Button type="submit" disabled={processing}>
+                                            {processing ? 'Memproses...' : 'Disposisi Surat'}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => setIsDisposisiMode(false)}
+                                        >
+                                            Batal
+                                        </Button>
+                                    </div>
+                                </form>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Main Content - Tabs Layout */}
+                <Tabs defaultValue="preview" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="preview" className="flex items-center gap-2">
+                            <Eye className="h-4 w-4" />
+                            Preview Dokumen
+                        </TabsTrigger>
+                        <TabsTrigger value="details" className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Detail & Disposisi
+                        </TabsTrigger>
+                    </TabsList>
+
+                    {/* PDF Preview Tab */}
+                    <TabsContent value="preview" className="space-y-4">
                         <Card>
-                            <CardHeader>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="flex items-center gap-2">
                                     <FileText className="h-5 w-5" />
-                                    Informasi Surat
+                                    Preview Dokumen: {surat.no_surat}
                                 </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">No. Agenda</Label>
-                                        <p className="mt-1 text-sm text-gray-900">{surat.no_agenda}</p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">No. Surat</Label>
-                                        <p className="mt-1 text-sm text-gray-900">{surat.no_surat}</p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">Tanggal Surat</Label>
-                                        <p className="mt-1 text-sm text-gray-900 flex items-center gap-1">
-                                            <Calendar className="w-4 h-4" />
-                                            {new Date(surat.tanggal_surat).toLocaleDateString('id-ID')}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">Tanggal Diterima</Label>
-                                        <p className="mt-1 text-sm text-gray-900 flex items-center gap-1">
-                                            <Calendar className="w-4 h-4" />
-                                            {new Date(surat.tanggal_diterima).toLocaleDateString('id-ID')}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">Pengirim</Label>
-                                        <p className="mt-1 text-sm text-gray-900 flex items-center gap-1">
-                                            <Building className="w-4 h-4" />
-                                            {surat.pengirim}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">Jenis Surat</Label>
-                                        <p className="mt-1 text-sm text-gray-900">{surat.jenis_surat}</p>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Perihal</Label>
-                                    <p className="mt-1 text-sm text-gray-900">{surat.hal_surat}</p>
-                                </div>
-
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Tujuan Surat</Label>
-                                    <p className="mt-1 text-sm text-gray-900">{surat.tujuan_surat}</p>
-                                </div>
-
-                                {surat.pesan_tambahan && (
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-500">Pesan Tambahan</Label>
-                                        <p className="mt-1 text-sm text-gray-900">{surat.pesan_tambahan}</p>
-                                    </div>
-                                )}
-
-                                <Separator />
-
-                                <div className="flex items-center gap-4">
-                                    <Button variant="outline" className="flex items-center gap-2">
-                                        <Download className="w-4 h-4" />
-                                        Unduh File Surat
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setIsPreviewExpanded(!isPreviewExpanded)}
+                                        className="gap-2"
+                                    >
+                                        {isPreviewExpanded ? (
+                                            <>
+                                                <Minimize2 className="h-4 w-4" />
+                                                Minimize
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Maximize2 className="h-4 w-4" />
+                                                Expand
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <a href={`/kepala/surat/${surat.id}/view`} target="_blank" rel="noopener noreferrer">
+                                            <Download className="h-4 w-4 mr-2" />
+                                            Download
+                                        </a>
                                     </Button>
                                 </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Form Disposisi */}
-                        {isDisposisiMode && surat.status_disposisi === 'diajukan' && auth.user.role === 'kepala' && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Send className="h-5 w-5" />
-                                        Disposisi Surat
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Pilih user yang akan menangani surat ini
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {availableUsers.length === 0 ? (
-                                        <div className="text-center py-6">
-                                            <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-                                            <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                                Tidak Ada User yang Tersedia
-                                            </h3>
-                                            <p className="text-gray-600">
-                                                Tidak ada user dengan hak disposisi yang tersedia saat ini. 
-                                                Hubungi administrator untuk mengatur hak disposisi user.
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <form onSubmit={handleDisposisi} className="space-y-4">
-                                        <div>
-                                            <Label htmlFor="user_id">Pilih User</Label>
-                                            <Select value={data.user_id} onValueChange={(value) => setData('user_id', value)}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih user untuk disposisi" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {availableUsers.map((user) => (
-                                                        <SelectItem key={user.id} value={user.id.toString()}>
-                                                            <div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <p className="font-medium">{user.name}</p>
-                                                                    <Badge variant="outline" className="text-xs">
-                                                                        {user.role.toUpperCase()}
-                                                                    </Badge>
-                                                                </div>
-                                                                {user.jabatan && (
-                                                                    <p className="text-sm text-gray-500">{user.jabatan}</p>
-                                                                )}
-                                                                {user.email && (
-                                                                    <p className="text-xs text-gray-400">{user.email}</p>
-                                                                )}
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.user_id && (
-                                                <p className="text-sm text-red-600 mt-1">{errors.user_id}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="catatan">Catatan Disposisi</Label>
-                                            <Textarea
-                                                id="catatan"
-                                                placeholder="Tambahkan catatan atau instruksi untuk user..."
-                                                value={data.catatan}
-                                                onChange={(e) => setData('catatan', e.target.value)}
-                                                rows={3}
-                                            />
-                                            {errors.catatan && (
-                                                <p className="text-sm text-red-600 mt-1">{errors.catatan}</p>
-                                            )}
-                                        </div>
-
-                                        <div className="flex gap-2">
-                                            <Button type="submit" disabled={processing}>
-                                                {processing ? 'Memproses...' : 'Disposisi Surat'}
-                                            </Button>
-                                            <Button 
-                                                type="button" 
-                                                variant="outline"
-                                                onClick={() => setIsDisposisiMode(false)}
-                                            >
-                                                Batal
-                                            </Button>
-                                        </div>
-                                        </form>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
-
-                    {/* Sidebar - Status & Riwayat */}
-                    <div className="space-y-6">
-                        {/* Status Disposisi */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <User className="h-5 w-5" />
-                                    Status Disposisi
-                                </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                            <User className="w-4 h-4 text-blue-600" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium">Admin</p>
-                                            <p className="text-xs text-gray-500">
-                                                {surat.admin?.name || 'Belum diajukan'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-3">
-                                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                                    </div>
-
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                            surat.status_disposisi !== 'diajukan' ? 'bg-green-100' : 'bg-yellow-100'
-                                        }`}>
-                                            <User className={`w-4 h-4 ${
-                                                surat.status_disposisi !== 'diajukan' ? 'text-green-600' : 'text-yellow-600'
-                                            }`} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium">Kepala</p>
-                                            <p className="text-xs text-gray-500">
-                                                {surat.status_disposisi === 'diajukan' 
-                                                    ? `${auth.user.name} (Menunggu disposisi)` 
-                                                    : `${auth.user.name} (Sudah disposisi)`}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {surat.pmo && (
-                                        <>
-                                            <div className="flex items-center gap-3">
-                                                <ArrowRight className="w-4 h-4 text-gray-400" />
+                            <CardContent className="p-0">
+                                <div className={`bg-gray-100 rounded-lg ${isPreviewExpanded ? 'h-screen' : 'h-96 md:h-[600px]'} transition-all duration-300`}>
+                                    {surat.file_surat.toLowerCase().endsWith('.pdf') ? (
+                                        <iframe
+                                            src={`/kepala/surat/${surat.id}/view`}
+                                            title={`Preview ${surat.no_surat}`}
+                                            className="w-full h-full rounded-lg border-0"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-gray-500">
+                                            <div className="text-center">
+                                                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                                                <p className="text-lg font-medium">Preview tidak tersedia</p>
+                                                <p className="text-sm">File ini bukan PDF atau tidak dapat ditampilkan</p>
+                                                <Button variant="outline" className="mt-4" asChild>
+                                                    <a href={`/kepala/surat/${surat.id}/view`} target="_blank" rel="noopener noreferrer">
+                                                        <Download className="h-4 w-4 mr-2" />
+                                                        Download File
+                                                    </a>
+                                                </Button>
                                             </div>
-
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                                    <User className="w-4 h-4 text-purple-600" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium">PMO</p>
-                                                    <p className="text-xs text-gray-500">{surat.pmo.name}</p>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {surat.pegawai && (
-                                        <>
-                                            <div className="flex items-center gap-3">
-                                                <ArrowRight className="w-4 h-4 text-gray-400" />
-                                            </div>
-
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                                    <User className="w-4 h-4 text-indigo-600" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium">Pegawai</p>
-                                                    <p className="text-xs text-gray-500">{surat.pegawai.name}</p>
-                                                </div>
-                                            </div>
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                             </CardContent>
                         </Card>
+                    </TabsContent>
 
-                        {/* Riwayat Disposisi */}
-                        {disposisiLogs.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <MessageSquare className="h-5 w-5" />
-                                        Riwayat Disposisi
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        {disposisiLogs.map((log) => (
-                                            <div key={log.id} className="border-l-2 border-gray-200 pl-4 pb-4">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    {getStatusLogBadge(log.status_baru)}
-                                                    <span className="text-xs text-gray-500">
-                                                        {new Date(log.created_at).toLocaleString('id-ID')}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm font-medium">{log.changed_by.name}</p>
-                                                <p className="text-xs text-gray-500">
-                                                    {log.status_lama ? `${log.status_lama} → ${log.status_baru}` : `Status: ${log.status_baru}`}
-                                                </p>
-                                                {log.disposisi_ke_user && (
-                                                    <p className="text-xs text-gray-500">
-                                                        Ke: {log.disposisi_ke_user.name}
-                                                    </p>
-                                                )}
-                                                {log.catatan && (
-                                                    <p className="text-sm text-gray-700 mt-1 italic">"{log.catatan}"</p>
-                                                )}
+                    {/* Details & Disposisi Tab */}
+                    <TabsContent value="details" className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Detail Surat */}
+                            <div className="lg:col-span-2 space-y-6">
+                                {/* Informasi Surat */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <FileText className="h-5 w-5" />
+                                            Informasi Surat
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">No. Agenda</Label>
+                                                <p className="mt-1 text-sm text-gray-900">{surat.no_agenda}</p>
                                             </div>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
-                </div>
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">No. Surat</Label>
+                                                <p className="mt-1 text-sm text-gray-900">{surat.no_surat}</p>
+                                            </div>
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">Tanggal Surat</Label>
+                                                <p className="mt-1 text-sm text-gray-900 flex items-center gap-1">
+                                                    <Calendar className="w-4 h-4" />
+                                                    {new Date(surat.tanggal_surat).toLocaleDateString('id-ID')}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">Tanggal Diterima</Label>
+                                                <p className="mt-1 text-sm text-gray-900 flex items-center gap-1">
+                                                    <Calendar className="w-4 h-4" />
+                                                    {new Date(surat.tanggal_diterima).toLocaleDateString('id-ID')}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">Pengirim</Label>
+                                                <p className="mt-1 text-sm text-gray-900 flex items-center gap-1">
+                                                    <Building className="w-4 h-4" />
+                                                    {surat.pengirim}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">Jenis Surat</Label>
+                                                <p className="mt-1 text-sm text-gray-900">{surat.jenis_surat}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-500">Perihal</Label>
+                                            <p className="mt-1 text-sm text-gray-900">{surat.hal_surat}</p>
+                                        </div>
+
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-500">Tujuan Surat</Label>
+                                            <p className="mt-1 text-sm text-gray-900">{surat.tujuan_surat}</p>
+                                        </div>
+
+                                        {surat.pesan_tambahan && (
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-500">Pesan Tambahan</Label>
+                                                <p className="mt-1 text-sm text-gray-900">{surat.pesan_tambahan}</p>
+                                            </div>
+                                        )}
+
+                                        <Separator />
+
+                                        <div className="flex items-center gap-4">
+                                            <Button variant="outline" className="flex items-center gap-2">
+                                                <Download className="w-4 h-4" />
+                                                Unduh File Surat
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                            </div>
+
+                            {/* Sidebar - Status & Riwayat */}
+                            <div className="space-y-6">
+                                {/* Status Disposisi */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <User className="h-5 w-5" />
+                                            Status Disposisi
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                    <User className="w-4 h-4 text-blue-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium">Admin</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {surat.admin?.name || 'Belum diajukan'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <ArrowRight className="w-4 h-4 text-gray-400" />
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${surat.status_disposisi !== 'diajukan' ? 'bg-green-100' : 'bg-yellow-100'
+                                                    }`}>
+                                                    <User className={`w-4 h-4 ${surat.status_disposisi !== 'diajukan' ? 'text-green-600' : 'text-yellow-600'
+                                                        }`} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium">Kepala</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {surat.status_disposisi === 'diajukan'
+                                                            ? `${auth.user.name} (Menunggu disposisi)`
+                                                            : `${auth.user.name} (Sudah disposisi)`}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {surat.pmo && (
+                                                <>
+                                                    <div className="flex items-center gap-3">
+                                                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                                            <User className="w-4 h-4 text-purple-600" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-medium">PMO</p>
+                                                            <p className="text-xs text-gray-500">{surat.pmo.name}</p>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {surat.pegawai && (
+                                                <>
+                                                    <div className="flex items-center gap-3">
+                                                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                            <User className="w-4 h-4 text-indigo-600" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-medium">Pegawai</p>
+                                                            <p className="text-xs text-gray-500">{surat.pegawai.name}</p>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Riwayat Disposisi */}
+                                {disposisiLogs.length > 0 && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <MessageSquare className="h-5 w-5" />
+                                                Riwayat Disposisi
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-4">
+                                                {disposisiLogs.map((log) => (
+                                                    <div key={log.id} className="border-l-2 border-gray-200 pl-4 pb-4">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            {getStatusLogBadge(log.status_baru)}
+                                                            <span className="text-xs text-gray-500">
+                                                                {new Date(log.created_at).toLocaleString('id-ID')}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm font-medium">{log.changed_by.name}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {log.status_lama ? `${log.status_lama} → ${log.status_baru}` : `Status: ${log.status_baru}`}
+                                                        </p>
+                                                        {log.disposisi_ke_user && (
+                                                            <p className="text-xs text-gray-500">
+                                                                Ke: {log.disposisi_ke_user.name}
+                                                            </p>
+                                                        )}
+                                                        {log.catatan && (
+                                                            <p className="text-sm text-gray-700 mt-1 italic">"{log.catatan}"</p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                </Tabs>
             </div>
         </AppLayout>
     );

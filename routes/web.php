@@ -44,6 +44,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/surat-masuk/{id}/mark-as-read', [SuratMasukController::class, 'markAsRead'])->name('surat-masuk.mark-as-read');
     Route::post('/surat-masuk/{id}/mark-as-unread', [SuratMasukController::class, 'markAsUnread'])->name('surat-masuk.mark-as-unread');
     Route::get('/surat-masuk/{id}/download', [SuratMasukController::class, 'downloadFile'])->name('surat-masuk.download');
+    Route::get('/surat-masuk/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat-masuk.view');
 
     // Route untuk manajemen user
     Route::resource('users', App\Http\Controllers\UserManagementController::class);
@@ -61,6 +62,9 @@ Route::middleware(['auth', 'kepala'])->prefix('kepala')->name('kepala.')->group(
 
     // Route untuk riwayat disposisi
     Route::get('/riwayat', [App\Http\Controllers\DisposisiController::class, 'riwayatKepala'])->name('riwayat.index');
+    
+    // Route untuk view PDF
+    Route::get('/surat/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat.view');
 });
 
 // Route untuk PMO
@@ -80,6 +84,9 @@ Route::middleware(['auth', 'pmo'])->prefix('pmo')->name('pmo.')->group(function 
     Route::get('/laporan', function () {
         return Inertia::render('pmo/laporan/index');
     })->name('laporan.index');
+    
+    // Route untuk view PDF
+    Route::get('/surat/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat.view');
 });
 
 // Route untuk Pegawai
@@ -94,6 +101,9 @@ Route::middleware(['auth', 'pegawai'])->prefix('pegawai')->name('pegawai.')->gro
 
     // Route untuk cetak dan laporan
     Route::get('/tugas/{id}/cetak', [App\Http\Controllers\DisposisiController::class, 'cetakPegawai'])->name('tugas.cetak');
+    
+    // Route untuk view PDF
+    Route::get('/surat/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat.view');
 });
 
 // Route untuk semua user yang authenticated (untuk pegawai tanpa privilege)
@@ -103,6 +113,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tugas-saya/{id}', [App\Http\Controllers\DisposisiController::class, 'showTugas'])->name('tugas-saya.show');
     Route::post('/tugas-saya/{id}/selesaikan', [App\Http\Controllers\DisposisiController::class, 'selesaikanTugas'])->name('tugas-saya.selesaikan');
     Route::get('/tugas-saya/{id}/cetak', [App\Http\Controllers\DisposisiController::class, 'cetakDisposisi'])->name('tugas-saya.cetak');
+    
+    // Route untuk view PDF (accessible to all authenticated users)
+    Route::get('/surat/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat.view');
 });
 
 require __DIR__.'/settings.php';

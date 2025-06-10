@@ -248,12 +248,12 @@ export default function PMODashboard({ auth, flash, dashboardData }: DashboardPr
                                     </Button>
                                 </Link>
                                 
-                                <Link href={route('pmo.laporan.index')}>
+                                {/* <Link href={route('pmo.laporan.index')}>
                                     <Button variant="outline" className="w-full justify-start">
                                         <TrendingUp className="h-4 w-4 mr-2" />
                                         Laporan & Monitoring
                                     </Button>
-                                </Link>
+                                </Link> */}
 
                                 <div className="pt-4 border-t">
                                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

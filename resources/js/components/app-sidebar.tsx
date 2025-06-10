@@ -59,11 +59,11 @@ const getNavigationItems = (userRole: string): NavItem[] => {
                     href: '/pmo/disposisi',
                     icon: FileEdit,
                 },
-                {
-                    title: 'Laporan',
-                    href: '/pmo/laporan',
-                    icon: BarChart3,
-                },
+                // {
+                //     title: 'Laporan',
+                //     href: '/pmo/laporan',
+                //     icon: BarChart3,
+                // },
             ];
         
         case 'pegawai':
