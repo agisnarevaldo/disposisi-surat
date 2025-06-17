@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'kepala' => \App\Http\Middleware\KepalaMiddleware::class,
             'pmo' => \App\Http\Middleware\PmoMiddleware::class,
             'pegawai' => \App\Http\Middleware\PegawaiMiddleware::class,
+            'pegawai.privilege' => \App\Http\Middleware\PegawaiPrivilegeMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
