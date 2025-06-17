@@ -243,13 +243,29 @@ class DisposisiController extends Controller
     // Halaman daftar surat untuk Pegawai
     public function indexPegawai()
     {
+        /** @var User $user */
+        $user = Auth::user();
+        
+        // Untuk pegawai dengan privilege, ambil surat yang ditugaskan ke mereka 
+        // baik sebagai pegawai_id maupun assigned_user_id
         $suratMasuk = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
-            ->where('pegawai_id', Auth::id())
+            ->where(function($query) {
+                $query->where('pegawai_id', Auth::id())
+                      ->orWhere('assigned_user_id', Auth::id());
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return Inertia::render('pegawai/disposisi/index', [
-            'suratMasuk' => $suratMasuk
+        return Inertia::render('pegawai/tugas/index', [
+            'suratMasuk' => $suratMasuk,
+            'auth' => [
+                'user' => [
+                    'id' => Auth::id(),
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'can_dispose' => $user->canDispose(),
+                ]
+            ]
         ]);
     }
 
@@ -260,8 +276,9 @@ class DisposisiController extends Controller
             ->findOrFail($id);
 
         // Pastikan pegawai hanya bisa lihat surat yang didisposisi ke mereka
-        if ($surat->pegawai_id !== Auth::id()) {
-            abort(403);
+        // baik sebagai pegawai_id maupun assigned_user_id
+        if ($surat->pegawai_id !== Auth::id() && $surat->assigned_user_id !== Auth::id()) {
+            abort(403, 'Anda tidak berwenang untuk melihat surat ini.');
         }
 
         /** @var User $user */
@@ -327,7 +344,7 @@ class DisposisiController extends Controller
             'catatan' => $request->catatan_selesai
         ]);
 
-        return redirect()->route('pegawai.disposisi.index')
+        return redirect()->route('pegawai.tugas.index')
             ->with('success', 'Disposisi surat berhasil diselesaikan.');
     }
 
@@ -373,9 +390,19 @@ class DisposisiController extends Controller
         /** @var User $user */
         $user = Auth::user();
         
+        // Pastikan hanya pegawai yang dapat mengakses
+        if ($user->role !== 'pegawai') {
+            abort(403, 'Anda tidak memiliki akses ke dashboard pegawai.');
+        }
+        
         // Ambil statistik tugas untuk Pegawai
+        // Untuk pegawai dengan privilege, ambil surat yang ditugaskan ke mereka 
+        // baik sebagai pegawai_id maupun assigned_user_id
         $tugasList = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai'])
-            ->where('pegawai_id', $pegawaiId)
+            ->where(function($query) use ($pegawaiId) {
+                $query->where('pegawai_id', $pegawaiId)
+                      ->orWhere('assigned_user_id', $pegawaiId);
+            })
             ->get();
         
         // Hitung rata-rata waktu penyelesaian (dalam hari)
@@ -432,8 +459,9 @@ class DisposisiController extends Controller
             ->findOrFail($id);
 
         // Pastikan pegawai hanya bisa cetak surat yang didisposisi ke mereka
-        if ($surat->pegawai_id !== Auth::id()) {
-            abort(403);
+        // baik sebagai pegawai_id maupun assigned_user_id
+        if ($surat->pegawai_id !== Auth::id() && $surat->assigned_user_id !== Auth::id()) {
+            abort(403, 'Anda tidak berwenang untuk mencetak surat ini.');
         }
 
         // Ambil riwayat disposisi
@@ -652,7 +680,7 @@ class DisposisiController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return Inertia::render('pegawai/tugas/show', [
+        return Inertia::render('tugas-saya/show', [
             'surat' => $surat,
             'disposisiLogs' => $disposisiLogs,
             'auth' => [
@@ -660,7 +688,7 @@ class DisposisiController extends Controller
                     'id' => Auth::id(),
                     'name' => $user->name,
                     'role' => $user->role,
-                    'can_dispose' => false, // pegawai tanpa privilege
+                    'can_dispose' => $user->canDispose(), // Get actual value
                 ]
             ]
         ]);
@@ -792,7 +820,8 @@ class DisposisiController extends Controller
         }
 
         // Pastikan surat sedang dalam tahap pegawai dan ditugaskan ke user ini
-        if ($surat->status_disposisi !== 'pegawai' || $surat->pegawai_id !== Auth::id()) {
+        if ($surat->status_disposisi !== 'pegawai' || 
+            ($surat->pegawai_id !== Auth::id() && $surat->assigned_user_id !== Auth::id())) {
             return back()->withErrors(['error' => 'Anda tidak berwenang untuk mendelegasikan surat ini.']);
         }
 
