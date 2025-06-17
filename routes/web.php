@@ -89,14 +89,12 @@ Route::middleware(['auth', 'pmo'])->prefix('pmo')->name('pmo.')->group(function 
     Route::get('/surat/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat.view');
 });
 
-// Route untuk Pegawai
-Route::middleware(['auth', 'pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\DisposisiController::class, 'dashboardPegawai'])->name('dashboard');
-
+// Route untuk Pegawai dengan Privilege Disposisi
+Route::middleware(['auth', 'pegawai.privilege'])->prefix('pegawai')->name('pegawai.')->group(function () {
     // Route untuk tugas disposisi (privileged pegawai)
     Route::get('/tugas', [App\Http\Controllers\DisposisiController::class, 'indexPegawai'])->name('tugas.index');
     Route::get('/tugas/{id}', [App\Http\Controllers\DisposisiController::class, 'showPegawai'])->name('tugas.show');
-    Route::post('/tugas/{id}/selesaikan', [App\Http\Controllers\DisposisiController::class, 'selesaikanTugas'])->name('tugas.selesaikan');
+    Route::post('/tugas/{id}/selesaikan', action: [App\Http\Controllers\DisposisiController::class, 'selesaikanTugas'])->name('tugas.selesaikan');
     Route::post('/tugas/{id}/delegasi', [App\Http\Controllers\DisposisiController::class, 'delegasiTugasPegawai'])->name('tugas.delegasi');
 
     // Route untuk cetak dan laporan
@@ -108,6 +106,9 @@ Route::middleware(['auth', 'pegawai'])->prefix('pegawai')->name('pegawai.')->gro
 
 // Route untuk semua user yang authenticated (untuk pegawai tanpa privilege)
 Route::middleware(['auth'])->group(function () {
+    // Dashboard pegawai (untuk semua pegawai)
+    Route::get('/pegawai/dashboard', [App\Http\Controllers\DisposisiController::class, 'dashboardPegawai'])->name('pegawai.dashboard');
+    
     // Route untuk pegawai tanpa privilege melihat tugas yang diberikan
     Route::get('/tugas-saya', [App\Http\Controllers\DisposisiController::class, 'indexTugasSaya'])->name('tugas-saya.index');
     Route::get('/tugas-saya/{id}', [App\Http\Controllers\DisposisiController::class, 'showTugas'])->name('tugas-saya.show');
