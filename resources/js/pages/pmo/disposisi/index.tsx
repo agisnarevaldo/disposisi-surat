@@ -357,6 +357,69 @@ export default function DisposisiIndex({ auth, suratMasuk, flash }: DisposisiInd
                     </CardContent>
                 </Card>
             </div>
+
+            {/* PDF Preview Modal */}
+            {showPdfPreview && selectedSurat && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className={`bg-white rounded-lg shadow-xl ${
+                        isPreviewExpanded 
+                            ? 'w-full h-full' 
+                            : 'w-full max-w-6xl h-5/6'
+                    } flex flex-col`}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Preview: {selectedSurat.nomor_surat}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                    {selectedSurat.perihal}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <a 
+                                    href={`/pmo/surat/${selectedSurat.id}/view?download=1`}
+                                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                >
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Download
+                                </a>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsPreviewExpanded(!isPreviewExpanded)}
+                                >
+                                    {isPreviewExpanded ? (
+                                        <Minimize2 className="w-4 h-4" />
+                                    ) : (
+                                        <Maximize2 className="w-4 h-4" />
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setShowPdfPreview(false);
+                                        setSelectedSurat(null);
+                                        setIsPreviewExpanded(false);
+                                    }}
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* PDF Content */}
+                        <div className="flex-1 p-4">
+                            <iframe
+                                src={`/pmo/surat/${selectedSurat.id}/view`}
+                                className="w-full h-full border rounded"
+                                title={`Preview ${selectedSurat.nomor_surat}`}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

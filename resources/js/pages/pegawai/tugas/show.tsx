@@ -164,7 +164,7 @@ export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPriv
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
-                        <Link href={route('pegawai.tugas.index')}>
+                        <Link href={route('pegawai.dashboard')}>
                             <Button variant="outline" size="sm">
                                 <ArrowLeft className="h-4 w-4 mr-1" />
                                 Kembali
