@@ -323,4 +323,150 @@ class SuratMasukController extends Controller
         // For non-PDF files, force download
         return $this->downloadFile($id);
     }
+
+    // Method untuk rekap surat (admin only)
+    public function rekapSurat(Request $request)
+    {
+        // Pastikan hanya admin yang bisa akses
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        $query = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai', 'assignedUser', 'assignments.user']);
+
+        // Filter berdasarkan tanggal
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('tanggal_diterima', '>=', $request->tanggal_mulai);
+        }
+
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('tanggal_diterima', '<=', $request->tanggal_selesai);
+        }
+
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status_disposisi', $request->status);
+        }
+
+        // Filter berdasarkan pengirim surat
+        if ($request->filled('pengirim')) {
+            $query->where('pengirim', 'like', '%' . $request->pengirim . '%');
+        }
+
+        $suratMasuks = $query->orderBy('tanggal_diterima', 'desc')->get();
+
+        // Statistik rekap
+        $totalSurat = $suratMasuks->count();
+        $statusStats = [
+            'diajukan' => $suratMasuks->where('status_disposisi', 'diajukan')->count(),
+            'pmo' => $suratMasuks->where('status_disposisi', 'pmo')->count(),
+            'pegawai' => $suratMasuks->where('status_disposisi', 'pegawai')->count(),
+            'selesai' => $suratMasuks->where('status_disposisi', 'selesai')->count(),
+        ];
+
+        // Statistik berdasarkan bulan (untuk chart)  
+        $monthlyStats = SuratMasuk::selectRaw('DATE_FORMAT(tanggal_diterima, "%Y-%m") as month, COUNT(*) as count')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month');
+
+        // Ambil daftar kepala untuk filter (tidak digunakan lagi)
+        // $kepalaList = User::where('role', 'kepala')->select('id', 'name')->get();
+
+        return inertia('admin/surat-masuk/rekap', [
+            'suratMasuks' => $suratMasuks,
+            'filters' => $request->only(['tanggal_mulai', 'tanggal_selesai', 'status', 'pengirim']),
+            // 'kepalaList' => $kepalaList,
+            'statistics' => [
+                'total' => $totalSurat,
+                'status' => $statusStats,
+                'monthly' => $monthlyStats,
+            ]
+        ]);
+    }
+
+    // Method untuk export rekap ke Excel/CSV
+    public function exportRekap(Request $request)
+    {
+        // Pastikan hanya admin yang bisa akses
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Anda tidak memiliki akses ke fitur ini.');
+        }
+
+        $query = SuratMasuk::with(['admin', 'kepala', 'pmo', 'pegawai', 'assignedUser']);
+
+        // Apply same filters as rekap
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('tanggal_diterima', '>=', $request->tanggal_mulai);
+        }
+
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('tanggal_diterima', '<=', $request->tanggal_selesai);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status_disposisi', $request->status);
+        }
+
+        if ($request->filled('kepala_id')) {
+            $query->where('kepala_id', $request->kepala_id);
+        }
+
+        if ($request->filled('pengirim')) {
+            $query->where('pengirim', 'like', '%' . $request->pengirim . '%');
+        }
+
+        $suratMasuks = $query->orderBy('tanggal_diterima', 'desc')->get();
+
+        // Generate CSV content
+        $csvData = [];
+        $csvData[] = [
+            'No',
+            'Nomor Surat',
+            'Pengirim',
+            'Perihal',
+            'Tanggal Diterima',
+            'Tanggal Surat',
+            'Status',
+            'Kepala',
+            'PMO',
+            'Pegawai',
+            'Disposisi At'
+        ];
+
+        foreach ($suratMasuks as $index => $surat) {
+            $csvData[] = [
+                $index + 1,
+                $surat->no_surat,
+                $surat->pengirim,
+                $surat->hal_surat,
+                $surat->tanggal_diterima,
+                $surat->tanggal_surat,
+                ucfirst($surat->status_disposisi),
+                $surat->kepala ? $surat->kepala->name : '-',
+                $surat->pmo ? $surat->pmo->name : '-',
+                $surat->pegawai ? $surat->pegawai->name : '-',
+                $surat->disposisi_at ? \Carbon\Carbon::parse($surat->disposisi_at)->format('d/m/Y H:i') : '-'
+            ];
+        }
+
+        $filename = 'rekap-surat-masuk-' . date('Y-m-d-H-i-s') . '.csv';
+        
+        $callback = function() use ($csvData) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8 to ensure proper character encoding in Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            foreach ($csvData as $row) {
+                fputcsv($file, $row);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
 }

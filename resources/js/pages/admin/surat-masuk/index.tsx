@@ -130,6 +130,9 @@ export default function Index() {
                         <Link href="/admin/surat-masuk/create">
                             <Button>+ Tambah Surat</Button>
                         </Link>
+                        <Link href="/admin/rekap-surat">
+                            <Button variant="outline">Rekap & Laporan</Button>
+                        </Link>
                     </div>
                 </div>
 

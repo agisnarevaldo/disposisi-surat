@@ -272,6 +272,12 @@ export default function Dashboard({ auth, userStats, suratStats }: DashboardProp
                                         Input Surat Baru
                                     </Button>
                                 </Link>
+                                <Link href="/admin/rekap-surat">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        <BarChart3 className="h-4 w-4 mr-2" />
+                                        Rekap & Laporan
+                                    </Button>
+                                </Link>
 
                                 <div className="pt-3 border-t">
                                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">

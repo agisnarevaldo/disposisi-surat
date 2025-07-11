@@ -46,6 +46,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/surat-masuk/{id}/download', [SuratMasukController::class, 'downloadFile'])->name('surat-masuk.download');
     Route::get('/surat-masuk/{id}/view', [SuratMasukController::class, 'viewFile'])->name('surat-masuk.view');
 
+    // Route untuk rekap surat
+    Route::get('/rekap-surat', [SuratMasukController::class, 'rekapSurat'])->name('rekap-surat');
+    Route::get('/rekap-surat/export', [SuratMasukController::class, 'exportRekap'])->name('rekap-surat.export');
+
     // Route untuk manajemen user
     Route::resource('users', App\Http\Controllers\UserManagementController::class);
     Route::post('/users/{id}/toggle-privilege', [App\Http\Controllers\UserManagementController::class, 'togglePrivilege'])->name('users.toggle-privilege');

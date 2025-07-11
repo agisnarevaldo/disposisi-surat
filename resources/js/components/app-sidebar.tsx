@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Download, LayoutGrid, Upload, Users, FileEdit, Printer, BarChart3 } from 'lucide-react';
+import { Download, LayoutGrid, Upload, Users, FileEdit, Printer, BarChart3, FileBarChart } from 'lucide-react';
 import AppLogo from './app-logo';
 
 // Navigation items berdasarkan role
@@ -20,6 +20,11 @@ const getNavigationItems = (userRole: string): NavItem[] => {
                     title: 'Surat Masuk',
                     href: '/admin/surat-masuk',
                     icon: Download,
+                },
+                {
+                    title: 'Rekap Surat',
+                    href: '/admin/rekap-surat',
+                    icon: FileBarChart,
                 },
                 {
                     title: 'Manajemen User',
