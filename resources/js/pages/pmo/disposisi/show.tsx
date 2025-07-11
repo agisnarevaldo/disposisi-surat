@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { 
     FileEdit, 
@@ -85,7 +85,7 @@ export default function DisposisiShow({ auth, surat, pegawaiUsers, disposisiLogs
     const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
     
     const { data, setData, post, processing, errors, reset } = useForm({
-        pegawai_id: '',
+        pegawai_ids: [] as number[],
         catatan: ''
     });
 
@@ -367,24 +367,55 @@ export default function DisposisiShow({ auth, surat, pegawaiUsers, disposisiLogs
                                             ) : (
                                                 <form onSubmit={handleDisposisi} className="space-y-4">
                                                     <div>
-                                                        <Label htmlFor="pegawai_id">Pilih Pegawai *</Label>
-                                                        <Select value={data.pegawai_id} onValueChange={(value) => setData('pegawai_id', value)}>
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Pilih pegawai yang akan menangani surat" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {pegawaiUsers.map((pegawai) => (
-                                                                    <SelectItem key={pegawai.id} value={pegawai.id.toString()}>
-                                                                        <div className='flex items-center gap-2'>
-                                                                            <User className="w-4 h-4" />
+                                                        <Label htmlFor="pegawai_ids">Pilih Pegawai *</Label>
+                                                        <div className="flex gap-2 mt-2 mb-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    const allIds = pegawaiUsers.map(p => p.id);
+                                                                    setData('pegawai_ids', allIds);
+                                                                }}
+                                                            >
+                                                                Pilih Semua
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setData('pegawai_ids', [])}
+                                                            >
+                                                                Bersihkan
+                                                            </Button>
+                                                        </div>
+                                                        <div className="mt-2 space-y-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+                                                            {pegawaiUsers.map((pegawai) => (
+                                                                <div key={pegawai.id} className="flex items-center space-x-2">
+                                                                    <Checkbox
+                                                                        id={`pegawai-${pegawai.id}`}
+                                                                        checked={data.pegawai_ids.includes(pegawai.id)}
+                                                                        onCheckedChange={(checked) => {
+                                                                            if (checked) {
+                                                                                setData('pegawai_ids', [...data.pegawai_ids, pegawai.id]);
+                                                                            } else {
+                                                                                setData('pegawai_ids', data.pegawai_ids.filter(id => id !== pegawai.id));
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                    <Label htmlFor={`pegawai-${pegawai.id}`} className="cursor-pointer">
+                                                                        <div>
                                                                             <div className="font-medium">{pegawai.name}</div>
                                                                             <div className="text-sm text-gray-500">{pegawai.email}</div>
                                                                         </div>
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {errors.pegawai_id && <p className="text-sm text-red-600 mt-1">{errors.pegawai_id}</p>}
+                                                                    </Label>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div className="text-sm text-gray-600 mt-2">
+                                                            {data.pegawai_ids.length} pegawai dipilih
+                                                        </div>
+                                                        {errors.pegawai_ids && <p className="text-sm text-red-600 mt-1">{errors.pegawai_ids}</p>}
                                                     </div>
 
                                                     <div>
@@ -400,8 +431,8 @@ export default function DisposisiShow({ auth, surat, pegawaiUsers, disposisiLogs
                                                     </div>
 
                                                     <div className="flex gap-3">
-                                                        <Button type="submit" disabled={processing} className="flex-1">
-                                                            {processing ? 'Memproses...' : 'Disposisi ke Pegawai'}
+                                                        <Button type="submit" disabled={processing || data.pegawai_ids.length === 0} className="flex-1">
+                                                            {processing ? 'Memproses...' : `Disposisi ke ${data.pegawai_ids.length} Pegawai`}
                                                         </Button>
                                                         <Button 
                                                             type="button" 

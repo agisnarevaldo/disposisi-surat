@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
     Search, 
-    Filter,
     Calendar,
     User,
     Clock,
     CheckCircle,
-    ArrowRight,
     Mail,
     Eye,
     FileText
@@ -32,6 +30,17 @@ interface SuratMasuk {
     kepala?: { name: string };
     pmo?: { name: string };
     pegawai?: { name: string };
+    assignments?: Array<{
+        id: number;
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        };
+        status: string;
+        catatan_assignment?: string;
+        created_at: string;
+    }>;
 }
 
 interface TugasIndexProps {
@@ -236,6 +245,20 @@ export default function TugasIndex({ auth, suratMasuk, flash }: TugasIndexProps)
                                                         </div>
                                                     )}
                                                 </div>
+                                                
+                                                {/* Tampilkan pegawai yang ditugaskan */}
+                                                {surat.assignments && surat.assignments.length > 0 && (
+                                                    <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                                                        <p className="text-sm font-medium text-gray-700 mb-2">Pegawai yang ditugaskan:</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {surat.assignments.map((assignment, index) => (
+                                                                <Badge key={index} variant="outline" className="text-xs">
+                                                                    {assignment.user.name}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                             
                                             <div className="flex items-center gap-2 ml-4">

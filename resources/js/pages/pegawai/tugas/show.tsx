@@ -6,11 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-    Calendar,
     User,
-    Mail,
     FileText,
     CheckCircle,
     Clock,
@@ -40,6 +38,17 @@ interface SuratMasuk {
     kepala?: { name: string };
     pmo?: { name: string };
     pegawai?: { name: string };
+    assignments?: Array<{
+        id: number;
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        };
+        status: string;
+        catatan_assignment?: string;
+        created_at: string;
+    }>;
 }
 
 interface DisposisiLog {
@@ -90,7 +99,7 @@ export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPriv
     });
 
     const { data: delegasiData, setData: setDelegasiData, post: postDelegasi, processing: processingDelegasi, errors: delegasiErrors, reset: resetDelegasi } = useForm({
-        pegawai_id: '',
+        pegawai_ids: [] as number[],
         catatan: ''
     });
 
@@ -403,6 +412,25 @@ export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPriv
                                                     )}
                                                 </div>
                                             )}
+                                            
+                                            {/* Tampilkan semua pegawai yang ditugaskan */}
+                                            {surat.assignments && surat.assignments.length > 0 && (
+                                                <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                                                    <p className="text-sm font-medium text-gray-700 mb-2">Pegawai yang ditugaskan:</p>
+                                                    <div className="space-y-2">
+                                                        {surat.assignments.map((assignment, index) => (
+                                                            <div key={index} className="flex items-center gap-2 text-sm">
+                                                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                                <span className="font-medium">{assignment.user.name}</span>
+                                                                <span className="text-gray-500">({assignment.user.email})</span>
+                                                                {assignment.user.id === auth.user.id && (
+                                                                    <Badge variant="secondary" className="text-xs">Anda</Badge>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -432,27 +460,60 @@ export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPriv
                                             ) : (
                                                 <form onSubmit={handleDelegasi} className="space-y-4">
                                                     <div>
-                                                        <Label htmlFor="pegawai_id">Pilih Pegawai *</Label>
-                                                        <Select
-                                                            value={delegasiData.pegawai_id}
-                                                            onValueChange={(value) => setDelegasiData('pegawai_id', value)}
-                                                        >
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Pilih pegawai untuk menangani tugas" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {pegawaiTanpaPrivilege.map((pegawai) => (
-                                                                    <SelectItem key={pegawai.id} value={pegawai.id.toString()}>
-                                                                        <div>
-                                                                            <div className="font-medium">{pegawai.name}</div>
-                                                                            <div className="text-sm text-gray-500">{pegawai.email}</div>
-                                                                        </div>
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {delegasiErrors.pegawai_id && (
-                                                            <p className="text-red-600 text-sm mt-1">{delegasiErrors.pegawai_id}</p>
+                                                        <Label htmlFor="pegawai_ids">Pilih Pegawai *</Label>
+                                                        <div className="flex gap-2 mt-2 mb-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    const allIds = pegawaiTanpaPrivilege.map(p => p.id);
+                                                                    setDelegasiData('pegawai_ids', allIds);
+                                                                }}
+                                                            >
+                                                                Pilih Semua
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setDelegasiData('pegawai_ids', [])}
+                                                            >
+                                                                Bersihkan
+                                                            </Button>
+                                                        </div>
+                                                        <div className="mt-2 space-y-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+                                                            {pegawaiTanpaPrivilege.length === 0 ? (
+                                                                <p className="text-gray-500 text-sm">Tidak ada pegawai tanpa privilege yang tersedia</p>
+                                                            ) : (
+                                                                pegawaiTanpaPrivilege.map((pegawai) => (
+                                                                    <div key={pegawai.id} className="flex items-center space-x-2">
+                                                                        <Checkbox
+                                                                            id={`pegawai-${pegawai.id}`}
+                                                                            checked={delegasiData.pegawai_ids.includes(pegawai.id)}
+                                                                            onCheckedChange={(checked) => {
+                                                                                if (checked) {
+                                                                                    setDelegasiData('pegawai_ids', [...delegasiData.pegawai_ids, pegawai.id]);
+                                                                                } else {
+                                                                                    setDelegasiData('pegawai_ids', delegasiData.pegawai_ids.filter(id => id !== pegawai.id));
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                        <Label htmlFor={`pegawai-${pegawai.id}`} className="cursor-pointer">
+                                                                            <div>
+                                                                                <div className="font-medium">{pegawai.name}</div>
+                                                                                <div className="text-sm text-gray-500">{pegawai.email}</div>
+                                                                            </div>
+                                                                        </Label>
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                        <div className="text-sm text-gray-600 mt-2">
+                                                            {delegasiData.pegawai_ids.length} pegawai dipilih
+                                                        </div>
+                                                        {delegasiErrors.pegawai_ids && (
+                                                            <p className="text-red-600 text-sm mt-1">{delegasiErrors.pegawai_ids}</p>
                                                         )}
                                                     </div>
                                                     <div>
@@ -471,11 +532,11 @@ export default function TugasShow({ auth, surat, disposisiLogs, pegawaiTanpaPriv
                                                     <div className="flex gap-2">
                                                         <Button
                                                             type="submit"
-                                                            disabled={processingDelegasi}
+                                                            disabled={processingDelegasi || delegasiData.pegawai_ids.length === 0}
                                                             className="flex-1"
                                                         >
                                                             <Forward className="h-4 w-4 mr-2" />
-                                                            {processingDelegasi ? 'Memproses...' : 'Delegasikan'}
+                                                            {processingDelegasi ? 'Memproses...' : `Delegasikan ke ${delegasiData.pegawai_ids.length} Pegawai`}
                                                         </Button>
                                                         <Button
                                                             type="button"

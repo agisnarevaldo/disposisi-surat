@@ -63,6 +63,24 @@ class SuratMasuk extends Model
         return $this->belongsTo(User::class, 'pegawai_id');
     }
 
+    // Relationship untuk multiple assignments
+    public function assignments()
+    {
+        return $this->hasMany(SuratAssignment::class);
+    }
+
+    public function activeAssignments()
+    {
+        return $this->hasMany(SuratAssignment::class)->where('status', 'assigned');
+    }
+
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'surat_assignments', 'surat_masuk_id', 'user_id')
+                    ->withPivot(['status', 'catatan_assignment', 'catatan_completion', 'completed_at', 'assigned_by_user_id'])
+                    ->withTimestamps();
+    }
+
     // Helper methods untuk alur disposisi
     public function canDisposisiToKepala()
     {

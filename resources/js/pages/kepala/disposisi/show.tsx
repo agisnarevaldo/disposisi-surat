@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -122,15 +122,19 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
     ];
 
     const { data, setData, post, processing, errors } = useForm({
-        user_id: '',
+        user_ids: [] as number[],
         catatan: ''
     });
 
     const handleDisposisi = (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('Sending data:', data);
         post(route('kepala.disposisi.to-user', surat.id), {
             onSuccess: () => {
                 setIsDisposisiMode(false);
+            },
+            onError: (errors) => {
+                console.error('Validation errors:', errors);
             }
         });
     };
@@ -242,34 +246,63 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                             ) : (
                                 <form onSubmit={handleDisposisi} className="space-y-4">
                                     <div>
-                                        <Label htmlFor="user_id">Pilih User</Label>
-                                        <Select value={data.user_id} onValueChange={(value) => setData('user_id', value)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Pilih user untuk disposisi" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availableUsers.map((user) => (
-                                                    <SelectItem key={user.id} value={user.id.toString()}>
-                                                        <div className='flex'>
-                                                            <div className="flex items-center gap-2">
-                                                                <p className="font-medium">{user.name}</p>
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    {user.role.toUpperCase()}
-                                                                </Badge>
+                                        <Label htmlFor="user_ids">Pilih User *</Label>
+                                        <div className="flex gap-2 mt-2 mb-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const allIds = availableUsers.map(u => u.id);
+                                                    setData('user_ids', allIds);
+                                                }}
+                                            >
+                                                Pilih Semua
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setData('user_ids', [])}
+                                            >
+                                                Bersihkan
+                                            </Button>
+                                        </div>
+                                        <div className="mt-2 space-y-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+                                            {availableUsers.map((user) => (
+                                                <div key={user.id} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`user-${user.id}`}
+                                                        checked={data.user_ids.includes(user.id)}
+                                                        onCheckedChange={(checked) => {
+                                                            if (checked) {
+                                                                setData('user_ids', [...data.user_ids, user.id]);
+                                                            } else {
+                                                                setData('user_ids', data.user_ids.filter(id => id !== user.id));
+                                                            }
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`user-${user.id}`} className="cursor-pointer flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <div className="font-medium">{user.name}</div>
+                                                                <div className="text-sm text-gray-500">
+                                                                    {user.jabatan} • {user.email}
+                                                                </div>
                                                             </div>
-                                                            {user.jabatan && (
-                                                                <p className="text-sm mr-0.5">{user.jabatan}</p>
-                                                            )}
-                                                            {user.email && (
-                                                                <p className="text-sm">{user.email}</p>
-                                                            )}
+                                                            <Badge variant="outline" className="text-xs">
+                                                                {user.role.toUpperCase()}
+                                                            </Badge>
                                                         </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.user_id && (
-                                            <p className="text-sm text-red-600 mt-1">{errors.user_id}</p>
+                                                    </Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="text-sm text-gray-600 mt-2">
+                                            {data.user_ids.length} user dipilih
+                                        </div>
+                                        {errors.user_ids && (
+                                            <p className="text-sm text-red-600 mt-1">{errors.user_ids}</p>
                                         )}
                                     </div>
 
@@ -288,8 +321,8 @@ export default function DisposisiShow({ auth, surat, availableUsers, disposisiLo
                                     </div>
 
                                     <div className="flex gap-2">
-                                        <Button type="submit" disabled={processing}>
-                                            {processing ? 'Memproses...' : 'Disposisi Surat'}
+                                        <Button type="submit" disabled={processing || data.user_ids.length === 0}>
+                                            {processing ? 'Memproses...' : `Disposisi ke ${data.user_ids.length} User`}
                                         </Button>
                                         <Button
                                             type="button"
